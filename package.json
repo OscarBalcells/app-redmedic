@@ -1,25 +1,82 @@
 {
-  "name": "electron-react-example",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "axios": "^0.18.0",
-    "concurrently": "^3.6.1",
-    "electron": "^2.0.7",
-    "electron-builder": "^20.27.1",
-    "electron-is-dev": "^0.3.0",
-    "react": "^16.4.2",
-    "react-dom": "^16.4.2",
-    "react-router-dom": "^4.3.1",
-    "react-scripts": "1.1.4",
-    "wait-on": "^2.1.0"
-  },
+  "name": "RedMedic",
+  "productName": "App RedMedic",
+  "version": "1.0.0",
+  "description": "Aplicacion para que el paciente pueda interactuar con el Blockchain de RedMedic",
+  "main": "src/index.js",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
-    "electron-dev": "concurrently \"BROWSER=none npm run start\" \"wait-on http://localhost:3000 && electron .\""
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "eslint --cache --color --ext .jsx,.js src"
   },
-  "main": "public/main.js"
+  "keywords": [],
+  "author": "Balcells",
+  "license": "MIT",
+  "config": {
+    "forge": {
+      "make_targets": {
+        "win32": [
+          "squirrel"
+        ],
+        "darwin": [
+          "zip"
+        ],
+        "linux": [
+          "deb",
+          "rpm"
+        ]
+      },
+      "electronPackagerConfig": {
+        "packageManager": "yarn"
+      },
+      "electronWinstallerConfig": {
+        "name": "RedMedic"
+      },
+      "electronInstallerDebian": {},
+      "electronInstallerRedhat": {},
+      "github_repository": {
+        "owner": "Oscar Balcells",
+        "name": "app-redmedic"
+      },
+      "windowsStoreConfig": {
+        "packageName": "",
+        "name": "RedMedic"
+      }
+    }
+  },
+  "dependencies": {
+    "antd": "^3.2.0",
+    "axios": "^0.18.0",
+    "bip39": "^2.6.0",
+    "bitcoinjs-lib": "^3.3.2",
+    "blockchain.info": "^2.11.0",
+    "bs58": "^4.0.1",
+    "electron-compile": "^6.4.2",
+    "electron-devtools-installer": "^2.1.0",
+    "electron-squirrel-startup": "^1.0.0",
+    "ethereumjs-util": "^6.1.0",
+    "hdkey": "^1.1.1",
+    "nedb": "^1.8.0",
+    "react": "^15.4.0",
+    "react-dom": "^15.4.0",
+    "react-hot-loader": "^3.0.0-beta.6",
+    "recharts": "^1.0.0-beta.10"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/preset-react": "^7.0.0",
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
+    "babel-plugin-transform-es2015-classes": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "electron-forge": "^5.1.0",
+    "electron-prebuilt-compile": "1.7.11",
+    "eslint": "^3",
+    "eslint-config-airbnb": "^15",
+    "eslint-plugin-import": "^2",
+    "eslint-plugin-jsx-a11y": "^5",
+    "eslint-plugin-react": "^7"
+  }
 }

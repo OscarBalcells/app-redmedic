@@ -1,0 +1,110 @@
+Arguments: 
+  /usr/local/bin/node /home/balcellsobeso/.npm-global/bin/yarn start
+
+PATH: 
+  /home/balcellsobeso/.npm-global/bin:/home/balcellsobeso/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+
+Yarn version: 
+  1.16.0
+
+Node version: 
+  10.16.0
+
+Platform: 
+  linux x64
+
+Trace: 
+  SyntaxError: /home/balcellsobeso/Desktop/app/package.json: Unexpected token 
+   in JSON at position 128
+      at JSON.parse (<anonymous>)
+      at /home/balcellsobeso/.npm-global/lib/node_modules/yarn/lib/cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (/home/balcellsobeso/.npm-global/lib/node_modules/yarn/lib/cli.js:304:30)
+      at /home/balcellsobeso/.npm-global/lib/node_modules/yarn/lib/cli.js:315:13
+
+npm manifest: 
+  {
+    "name": "RedMedic",
+    "productName": "App RedMedic",
+    "version": "1.0.0",
+    "description": "Aplicacion para que el paciente
+  									pueda interactuar con el Blockchain de RedMedic",
+    "main": "src/index.js",
+    "scripts": {
+      "start": "electron-forge start",
+      "package": "electron-forge package",
+      "make": "electron-forge make",
+      "publish": "electron-forge publish",
+      "lint": "eslint --cache --color --ext .jsx,.js src"
+    },
+    "keywords": [],
+    "author": "mmichailidis",
+    "license": "MIT",
+    "config": {
+      "forge": {
+        "make_targets": {
+          "win32": [
+            "squirrel"
+          ],
+          "darwin": [
+            "zip"
+          ],
+          "linux": [
+            "deb",
+            "rpm"
+          ]
+        },
+        "electronPackagerConfig": {
+          "packageManager": "yarn"
+        },
+        "electronWinstallerConfig": {
+          "name": "jswallet"
+        },
+        "electronInstallerDebian": {},
+        "electronInstallerRedhat": {},
+        "github_repository": {
+          "owner": "",
+          "name": ""
+        },
+        "windowsStoreConfig": {
+          "packageName": "",
+          "name": "jswallet"
+        }
+      }
+    },
+    "dependencies": {
+      "antd": "^3.2.0",
+      "axios": "^0.18.0",
+      "bip39": "^2.5.0",
+      "bitcoinjs-lib": "^3.3.2",
+      "blockchain.info": "^2.11.0",
+      "bs58": "^4.0.1",
+      "electron-compile": "^6.4.2",
+      "electron-devtools-installer": "^2.1.0",
+      "electron-squirrel-startup": "^1.0.0",
+      "nedb": "^1.8.0",
+      "react": "^15.4.0",
+      "react-dom": "^15.4.0",
+      "react-hot-loader": "^3.0.0-beta.6",
+      "recharts": "^1.0.0-beta.10"
+    },
+    "devDependencies": {
+      "babel-plugin-transform-async-to-generator": "^6.24.1",
+      "babel-plugin-transform-es2015-classes": "^6.24.1",
+      "babel-preset-env": "^1.6.1",
+      "babel-preset-react": "^6.24.1",
+      "electron-forge": "^5.1.0",
+      "electron-prebuilt-compile": "1.7.11",
+      "eslint": "^3",
+      "eslint-config-airbnb": "^15",
+      "eslint-plugin-import": "^2",
+      "eslint-plugin-jsx-a11y": "^5",
+      "eslint-plugin-react": "^7"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
