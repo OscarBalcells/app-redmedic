@@ -14,8 +14,8 @@ const createWindow = async () => {
 
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        width: 800,
-        height: 500,
+        width: 1000,
+        height: 800,
     });
 
     // and load the index.html of the app.
@@ -24,7 +24,7 @@ const createWindow = async () => {
     // Open the DevTools.
     if (isDevMode) {
         await installExtension(REACT_DEVELOPER_TOOLS);
-        mainWindow.webContents.openDevTools();
+        //mainWindow.webContents.openDevTools();
     }
 
     // Emitted when the window is closed.

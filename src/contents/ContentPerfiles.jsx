@@ -1,138 +1,75 @@
 import React from "react";
 import Wallet from "../logic/Wallet.js";
 import Database from "../logic/Database.js";
-import { Button, Icon, Layout, Form, Input, Modal, Radio } from 'antd';
+import Perfil from "../logic/Perfil.js";
+import ContentPerfil from "./ContentPerfil.jsx";
+import AccountForm from "./AccountForm.jsx";
+import { Tabs, Button, Icon, Layout, Form, Input, Modal, Radio } from 'antd';
 const { Header, Content, Footer } = Layout;
 
-class AccountForm extends React.Component {
-
-	state = {
-		name: "",
-		date: "",
-		mnemonic: "",
-	}
-
-		handleSubmit(e) {
-			console.log("Received");
-			e.preventDefault();
-			console.log(e);
-		}
-
-		render() {
-			const {getFieldDecorator} = this.props.form;
-			return (
-				<Form onSubmit={(e) => this.handleSubmit(e)} className="login-form">
-					<Form.Item>
-						{getFieldDecorator("Nombre y Apellidos", {
-							rules: [{ required: true, message:"Escribe tu nombre!"}]
-						})(
-							<Input
-								prefix={<Icon type="user" style={{color:"rgba(0,0,0,.25)"}} />}
-								placeholder="Oscar Balcells Obeso"
-								value={this.state.name}
-								onChange={(e) => this.setState({name:e.target.value})}
-							/>
-						)}
-					</Form.Item>
-					<Form.Item>
-						{getFieldDecorator("Fecha de Nacimiento", {
-							rules: [{ required: true, message:"Escribe tu fecha de nacimiento"}]
-						})(
-							<Input
-								prefix={<Icon type="schedule" style={{color:"rgba(0,0,0,.25)"}} />}
-								placeholder="1/3/2002"
-							/>
-						)}
-					</Form.Item>
-				</Form>
-			);
-		}
-}
-
-const WrappedAccountForm = Form.create({name:"account-form"})(AccountForm);
 
 class ContentPerfiles extends React.Component {
 
 	constructor(props) {
 		super(props);
 		this.state = {
-			perfiles : [],
-			perfilSelected: 0,
+			resetValues: false,
 			visible: false,
+			perfiles: [],
+			seleccionado: 1,
 		}
-		this.retrievePerfiles();
 	}
 
-	retrievePerfiles() {
-		console.log("Retrieving profiles");
+	componentDidMount() {
+		Perfil.all().then((perfiles) => {
+			let guardarPerfiles = perfiles.map((perfil) =>
+				[perfil.id, perfil.primerNombre]
+			);
+			console.log("Perfiles restaurados", guardarPerfiles);
+			this.setState({perfiles:guardarPerfiles});
+		})
 	}
 
-	handleOK() {
-
+	accountCreated(fields) {
+		this.setState({visible:false,resetValues:true});
+		const nuevoPerfil = new Perfil(fields);
+		nuevoPerfil.save();
+		const guardarPerfil = [nuevoPerfil.id, nuevoPerfil.primerNombre];
+		console.log("Nuevo perfil creado y guardado! ", fields);
+		this.setState({perfiles:this.state.perfiles.concat(guardarPerfil)})
 	}
 
-	savePerfil() {
-
+	accountCanceled() {
+		this.setState({visible:false,resetValues:true});
 	}
 
-	removePerfil() {
-
+	returnTabs() {
+		let tabs = this.state.perfiles.map(perfil =>
+			<Tabs.TabPane key={perfil[0]} tab={<span>{perfil[1]}</span>}>
+				<ContentPerfil id={perfil[0]} />
+			</Tabs.TabPane>
+		);
+		return (tabs);
 	}
 
-	createWallet() {
-		const mnemonic = Wallet.generateMnemonic();
-		const wallet = new Wallet("oscar",mnemonic);
-		console.log("Wallet created!");
-		console.log("Address is: " + wallet.address);
-		return wallet;
-	}
-
-	static get store() {
-			if (!Perfil.__store) {
-				Perfil.__store = new Database("perfiles");
-			}
-			return Perfil.__store;
-	}
-
-	static all() {
-			return Perfil.store.find({ type: "perfil" }).then((docs) => {
-					return docs.map(doc => new Wallet(doc));
-			});
-	}
 
 	render() {
-		const formItemLayout = {
-			labelCol: {span: 4},
-			wrapperCol: { span: 14},
-		}
-		const buttonItemLayout = {
-			wrapperCol: {span: 14, offset:4},
-		}
-
 		return(
-			<Layout style={{marginLeft:200}}>
-				<Header />
-				<Content>
-					<div className="tabs">
-						Tabs
-					</div>
-					<div className="form">
-						<Button type="primary" onClick={() => this.setState({visible: true})}> Add account</Button>
-						<Modal
-							title="Add Account"
-							visible={this.state.visible}
-							onOk={() => this.handleOK()}
-							onCancel={() => this.setState({visible:false})}
-						>
-							<WrappedAccountForm />
-						</Modal>
-					</div>
-				</Content>
-				<Footer style={{textAlign:"center"}}>App RedMedic ©2019 Created by Oscar Balcells Obeso</Footer>
+			<Layout style={{marginLeft:"200px"}}>
+				<Tabs defaultActiveKey="2" style={{ padding: "16px" }}>
+					{this.returnTabs()}
+				</Tabs>
+				<Button type="primary" color="red" onClick={() => {this.setState({resetValues:false,visible:true})}}>Add Account</Button>
+				<Modal
+					visible={this.state.visible}
+					onCancel={() => this.accountCanceled()}
+					footer={[]}
+				>
+					<AccountForm onSubmit={(fields) => this.accountCreated(fields)} resetValues={this.state.resetValues}/>
+				</Modal>
 			</Layout>
 		);
 	}
 }
-
 
 export default ContentPerfiles;

@@ -9,6 +9,9 @@ class App extends React.Component {
 			super(props);
 			this.state = {
 				selected: 1,
+				perfiles: [
+
+				]
 			}
 		}
 
@@ -17,7 +20,7 @@ class App extends React.Component {
 		}
 
 		returnSelected() {
-			if(this.state.selected === 2) {
+			if(this.state.selected === 1) {
 				return (<ContentPerfiles />);
 			} else {
 				return (<h1>No perfil</h1>);
@@ -27,14 +30,14 @@ class App extends React.Component {
     render() {
 
         return (
-            <Layout>
+            <Layout style={{primaryColor:"red"}}>
 							<Sider style={{
 								left:0,
 								overflow:"auto",
 								height:"100vh",
 								position: "fixed"}}>
 								<div className="logo" />
-								<Menu theme="dark" mode="inline" defaultSelectedKeys={["1"]}>
+								<Menu theme="light" mode="inline" defaultSelectedKeys={["1"]}>
 
 									<Menu.Item key="1" id="menu-item1"
 									style={{height:"80px"}} onClick={() => this.handleMenuClick(1)}>
