@@ -1,95 +1,101 @@
 import React from 'react';
 import { Menu, Icon, Layout } from 'antd';
 const { Header, Content, Footer, Sider } = Layout;
-import ContentPerfiles from "./contents/ContentPerfiles.jsx";
 
-class App extends React.Component {
+import ProfilesTab from "./contents/ProfilesTab.jsx";
+import Profile from "./logic/Profile.js";
+import Logo from "./contents/Logo.jsx";
+import DocumentTab from "./contents/DocumentTab.jsx";
+
+export default class App extends React.Component {
 
 		constructor(props) {
 			super(props);
 			this.state = {
 				selected: 1,
-				perfiles: [
-
-				]
+				activeProfileId: " ",
 			}
 		}
 
-		 handleMenuClick(i) {
+		//select the first profile in list
+		componentDidMount() {
+			Profile.all().then((profiles) => {
+				if(profiles.length > 0) {
+					this.setState({activeProfileId:profiles[0].id});
+				} else {
+					console.log("No profiles!");
+				}
+			});
+		}
+
+		//navigate menu tabs
+		handleMenuClick(i) {
 			this.setState({selected:i});
 		}
 
-		returnSelected() {
+		returnSelectedTab() {
 			if(this.state.selected === 1) {
-				return (<ContentPerfiles />);
+				return (<ProfilesTab activateProfile={(id) => this.setState({activeProfileId:id})}/>);
+			} else if(this.state.selected == 2) {
+				if(this.state.activeProfileId !== " ") {
+					return (<DocumentTab activeProfile={this.state.activeProfileId}/>);
+				} else {
+					return (<h1>Tienes que añadir un perfil para poder usar esta funcionalidad</h1>);
+				}
 			} else {
-				return (<h1>No perfil</h1>);
+				return (<h1>{this.state.activeProfileName}</h1>);
 			}
 		}
 
     render() {
-
         return (
-            <Layout style={{primaryColor:"red"}}>
+					<Layout>
+						<Header>
+							<div>
+								<h1 style={{color:"white",display:"inline",float:"right"}}>{this.state.activeProfileName}</h1>
+							</div>
+						</Header>
+            <Layout>
 							<Sider style={{
 								left:0,
 								overflow:"auto",
 								height:"100vh",
 								position: "fixed"}}>
 								<div className="logo" />
-								<Menu theme="light" mode="inline" defaultSelectedKeys={["1"]}>
+								<Menu theme="dark" mode="inline" defaultSelectedKeys={["1"]}>
 
 									<Menu.Item key="1" id="menu-item1"
-									style={{height:"80px"}} onClick={() => this.handleMenuClick(1)}>
-										<div style={{marginTop:"20px"}}>
+									style={{height:"50px"}} onClick={() => this.handleMenuClick(1)}>
+										<div style={{marginTop:"5px"}}>
 											<Icon type="user"
-											style={{fontSize:"25px"}}/>
-											<span className="nav-text" style={{fontSize:"20px"}}>Perfil</span>
+											style={{fontSize:"18px"}}/>
+											<span className="nav-text" style={{fontSize:"15px"}}>Perfiles</span>
 										</div>
 									</Menu.Item>
 
 									<Menu.Item key="2" id="menu-item2"
-									style={{height:"80px"}} onClick={() => this.handleMenuClick(2)}>
-										<div style={{marginTop:"20px"}}>
-											<Icon type="video-camera"
-											style={{fontSize:"25px"}}/>
-											<span className="nav-text" style={{fontSize:"20px"}}>Documento</span>
+									style={{height:"50px"}} onClick={() => this.handleMenuClick(2)}>
+										<div style={{marginTop:"5px"}}>
+											<Icon type="file-text"
+											style={{fontSize:"18px"}}/>
+											<span className="nav-text" style={{fontSize:"15px"}}>Documento</span>
 										</div>
 									</Menu.Item>
 
 									<Menu.Item key="3" id="menu-item3"
-									style={{height:"80px"}} onClick={() => this.handleMenuClick(3)}>
-										<div style={{marginTop:"20px"}}>
-											<Icon type="upload"
-											style={{fontSize:"25px"}}/>
-											<span className="nav-text" style={{fontSize:"20px"}}>Permisos</span>
-										</div>
-									</Menu.Item>
-
-									<Menu.Item key="4" id="menu-item4"
-									style={{height:"80px"}} onClick={() => this.handleMenuClick(4)}>
-										<div style={{marginTop:"20px"}}>
+									style={{height:"50px"}} onClick={() => this.handleMenuClick(3)}>
+										<div style={{marginTop:"5px"}}>
 											<Icon type="dollar"
-											style={{fontSize:"25px"}}/>
-											<span className="nav-text" style={{fontSize:"20px"}}>Balance</span>
+											style={{fontSize:"18px"}}/>
+											<span className="nav-text" style={{fontSize:"15px"}}>Balance</span>
 										</div>
 									</Menu.Item>
 
 								</Menu>
 							</Sider>
-							{this.returnSelected()}
+							{this.returnSelectedTab()}
 						</Layout>
-
+					</Layout>
         );
     }
 }
-
-//Every content component should have the following layour
-// <Header style={{ background: '#fff', padding: 0 }} />
-// <Content style={{ margin: '24px 16px 0', overflow: 'initial' }}>
-// 	<div style={{ padding: 24, background: '#fff', textAlign: 'center' }}>
-// 		Contenido
-// 	</div>
-// </Content>
-
-export default App;

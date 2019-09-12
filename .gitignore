@@ -1,13 +1,5 @@
 node_modules
-out
-.eslintcache
 package-lock.json
-
-# WebStorm Project
-.idea
-
-# NeDB local file
 db
-
 # MacOS Folder DB
 .DS_Store
