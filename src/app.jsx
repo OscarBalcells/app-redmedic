@@ -34,9 +34,9 @@ export default class App extends React.Component {
 		}
 
 		returnSelectedTab() {
-			if(this.state.selected === 1) {
+			if(this.state.selected === 2) {
 				return (<ProfilesTab activateProfile={(id) => this.setState({activeProfileId:id})}/>);
-			} else if(this.state.selected == 2) {
+			} else if(this.state.selected == 1) {
 				if(this.state.activeProfileId !== " ") {
 					return (<DocumentTab activeProfile={this.state.activeProfileId}/>);
 				} else {
@@ -63,7 +63,6 @@ export default class App extends React.Component {
 								position: "fixed"}}>
 								<div className="logo" />
 								<Menu theme="dark" mode="inline" defaultSelectedKeys={["1"]}>
-
 									<Menu.Item key="1" id="menu-item1"
 									style={{height:"50px"}} onClick={() => this.handleMenuClick(1)}>
 										<div style={{marginTop:"5px"}}>

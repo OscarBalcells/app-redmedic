@@ -46,9 +46,7 @@ export default class ProfileContent extends React.Component {
 		//only the id of the profile will be passed and we will load the right profile
 		//from the database. Fields will be set to the actual profile data and not empty.
 		componentDidMount() {
-			console.log("Id:", this.props.id);
 			const profile = Profile.getProfileById(this.props.id).then((profile) => {
-				console.log("Profiles name:", profile.nombre);
 				var fields = profile.toObject();
 				if(fields["foto"] === null) {
 					fields["foto"] = "";
@@ -62,7 +60,6 @@ export default class ProfileContent extends React.Component {
 		//Update Button was clicked so now the profile data will be matched
 		//with the fields values
 		updateProfile() {
-			console.log("Fields updated");
 			this.profile.nombre = this.state.fields.nombre;
 			this.profile.fecha = this.state.fields.fecha;
 			this.profile.sexo = this.state.fields.sexo;

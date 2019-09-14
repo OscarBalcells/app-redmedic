@@ -34,7 +34,6 @@ export default class ProfilesTab extends React.Component {
 			let storeProfiles = profiles.map((profile) =>
 				[profile.id, profile.primerNombre]
 			);
-			console.log("Perfiles restaurados", storeProfiles);
 			this.setState({profiles:storeProfiles});
 		})
 	}
@@ -43,7 +42,6 @@ export default class ProfilesTab extends React.Component {
 	profileCreated(fields) {
 		this.setState({visible:false,resetValues:true});
 		fields["mnemonic"] = simpleCrypto.encrypt(fields["mnemonic"]);
-		console.log("Fields are:", fields);
 		const newProfile = new Profile(fields);
 		newProfile.save();
 		this.retrieveProfiles();

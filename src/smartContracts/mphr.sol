@@ -56,6 +56,8 @@ contract MasterPHR {
     function confirmPPHR(bytes32 name) public {
         require(pphrs[name].exists == false);
         require(pphrsUnconfirmed[name].exists == true);
+				require(pphrsUnconfirmed[name].providerAddr == msg.sender);
+				
         pphrs[name] = pphrsUnconfirmed[name];
         gateways.push(pphrs[name].gateway);
         gatewayAtIndex[pphrs[name].gateway] = gateways.length-1;

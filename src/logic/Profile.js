@@ -7,7 +7,7 @@ var simpleCrypto = new SimpleCrypto("redmedic");
 //this creates a class, which represents a profile
 //this profile has some basic identifier data as well
 //as the wallet attached to the profile
-class Profile {
+export default class Profile {
 	constructor(data) {
 		this.nombre = data["nombre"];
 		this.primerNombre = this.nombre.split(" ")[0];
@@ -16,7 +16,7 @@ class Profile {
 		this.id = data["id"];
 		this.mnemonic = data["mnemonic"];
 		//creates the wallet, which is attached to the profile
-		this.wallet = new Wallet(this.nombre, simpleCrypto.decrypt(this.mnemonic));
+		this.wallet = new Wallet(simpleCrypto.decrypt(this.mnemonic));
 		this.foto = data["foto"] === null ? "" : data["foto"];
 	}
 
@@ -76,5 +76,3 @@ class Profile {
 	}
 
 }
-
-export default Profile;

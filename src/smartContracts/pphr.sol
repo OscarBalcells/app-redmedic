@@ -44,18 +44,14 @@ contract PartialPHR {
 
     //INDEFINITE ACCESS
 
-    function grantIndefiniteAccess(address account, bytes32[] memory sections) public {
+    function grantAccess(address account, bytes32 section) public {
         require(msg.sender == patient);
-        for(uint i = 0; i < sections.length; i++) {
-            access[sections[i]][account] = true;
-        }
+        access[section][account] = true;
     }
 
-    function revokeIndefiniteAccess(address account, bytes32[] memory sections) public {
+    function revokeIndefiniteAccess(address account, bytes32 section) public {
         require(msg.sender == patient);
-        for(uint i = 0; i < sections.length; i++) {
-            access[sections[i]][account] = false;
-        }
+				access[section][account] = false;
     }
 
     //FULL INDEFINITE ACCESS
@@ -72,12 +68,10 @@ contract PartialPHR {
 
     //TEMPORARY ACCESS WHICH CAN'T BE REVOKED
 
-    function grantTemporaryAccess(address account, bytes32[] memory sections, uint nHours) public {
+    function grantTemporaryAccess(address account, bytes32 section, uint nHours) public {
         require(msg.sender == patient);
         uint willBeRevokedAt = block.timestamp + 1 hours * nHours;
-        for(uint i = 0; i < sections.length; i++) {
-            accessRevokeAt[sections[i]][account] = willBeRevokedAt;
-        }
+        accessRevokeAt[section][account] = willBeRevokedAt;
     }
 
     function grantTemporaryFullAccess(address account, uint nHours) public {
@@ -100,20 +94,18 @@ contract PartialPHR {
         if(sectionList.length > 1) {
             sectionList[index] = sectionList[sectionList.length-1];
         }
-        sectionList.length--;
+        sectionList.length--; //automatically clears last element from array
     }
 
     ///EXTERNAL QUERY FUNCTIONS
 
-    function hasAccess(address account, bytes32[] memory sections) public view returns (bool) {
+    function hasAccess(address account, bytes32 section) public view returns (bool) {
         if(fullAccess[account] == true) return true;
         else if(fullAccessRevokeAt[account] > block.timestamp) return true;
 
-        for(uint i=0; i < sections.length; i++) {
-            if(access[sections[i]][account] == false && accessRevokeAt[sections[i]][account] < block.timestamp) {
-                return false;
-            }
-        }
+				if(access[section][account] == false && accessRevokeAt[section][account] < block.timestamp) {
+					return false;
+				}
         return true;
     }
 
