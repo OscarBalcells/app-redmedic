@@ -65,6 +65,7 @@ export default class ProfileContent extends React.Component {
 			this.profile.sexo = this.state.fields.sexo;
 			this.profile.id = this.state.fields.id;
 			this.profile.foto = this.state.fields.foto;
+			this.profile.mphr = this.state.fields.mphr;
 			this.profile.update();
 		}
 
@@ -93,7 +94,7 @@ export default class ProfileContent extends React.Component {
 
 		render() {
 			//Upload button changes when it's empty, loading or loaded
-			const uploadButton = (
+			const UploadButton = (
 				<div>
 	        <Icon type={this.state.imageLoading ? 'loading' : 'plus'} />
 	        <div className="ant-upload-text">Upload</div>
@@ -104,22 +105,21 @@ export default class ProfileContent extends React.Component {
 			const foto = (
 				<Upload
 					style={{maxWidth:"300px",maxHeight:"100px"}}
-					name="avatar"
 					listType="picture-card"
 					className="avatar-uploader"
 					showUploadList={false}
 					beforeUpload={beforeUpload}
 					onChange={(info) => this.changeField(info, "foto")}
 				>
-					{this.state.fields.foto != "" ? <img src={this.state.fields.foto} alt="avatar" style={{maxWidth:"200px",maxHeight:"125px"}} /> : uploadButton}
+					{this.state.fields.foto != "" ? <img src={this.state.fields.foto} alt="avatar" style={{maxWidth:"200px",maxHeight:"125px"}} /> : UploadButton}
 				</Upload>
 			);
 
 			return(
-					<div style={{height:"100%"}}>
+					<div style={{height:"120%"}}>
 						<Form onSubmit={(e) => this.fieldsUpdated(e)} style={{marginLeft:"10px"}}>
 							{foto}
-							<Form.Item label="Nombre y Apellidos">
+							<Form.Item label="Nombre y Apellidos" style={{marginTop:"3px",marginBottom:"3px"}}>
 									<Input
 										style={{width:"300px"}}
 										prefix={<Icon type="user" style={{color:"rgba(0,0,0,.25)"}} />}
@@ -128,7 +128,7 @@ export default class ProfileContent extends React.Component {
 										onChange={(e) => this.changeField(e,"nombre")}
 									/>
 							</Form.Item>
-							<Form.Item label="Fecha de nacimiento">
+							<Form.Item label="Fecha de nacimiento" style={{marginTop:"3px",marginBottom:"3px"}}>
 								<Input
 										style={{width:"120px"}}
 										prefix={<Icon type="calendar" style={{color:"rgba(0,0,0,.25)"}} />}
@@ -137,14 +137,14 @@ export default class ProfileContent extends React.Component {
 										onChange={(e) => this.changeField(e, "fecha")}
 								/>
 							</Form.Item>
-							<Form.Item label="Sexo">
+							<Form.Item label="Sexo" style={{marginTop:"3px",marginBottom:"3px"}}>
 								<Radio.Group onChange={(e) => this.changeField(e,"sexo")} value={this.state.fields.sexo}>
 									<Radio value={"Mujer"}>Mujer</Radio>
 									<Radio value={"Hombre"}>Hombre</Radio>
 								</Radio.Group>
 							</Form.Item>
 
-							<Form.Item label="ID Seguridad social">
+							<Form.Item label="ID Seguridad social" style={{marginTop:"3px",marginBottom:"3px"}}>
 								<Input
 									style={{width:"300px"}}
 									prefix={<Icon type="idcard" style={{color:"rgba(0,0,0,.25)"}} />}
@@ -153,11 +153,20 @@ export default class ProfileContent extends React.Component {
 									onChange={(e) => this.changeField(e,"id")}
 									/>
 							</Form.Item>
+							<Form.Item label="Dirección de tu historial médico maestro" style={{marginTop:"3px",marginBottom:"6px"}}>
+								<Input
+									style={{width:"400px"}}
+									prefix={<Icon type="qrcode" style={{color:"rgba(0,0,0,.25)"}} />}
+									placeholder={"0x23702ecb660A2b10e6D1c47c6ECbC8F410980f56"}
+									value={this.state.fields.mphr}
+									onChange={(e) => this.changeField(e,"mphr")}
+									/>
+							</Form.Item>
 					</Form>
-					<span style={{position:"absolute",right:"15px",top:"95%"}}>
+					<span style={{position:"absolute",right:"10px",top:"90%"}}>
 						<Button style={{border:"1px solid #bae7ff"}} type="secondary" onClick={() => this.updateProfile()}>Actualizar datos</Button>
-						<Button style={{marginLeft:"5px"}} type="primary" onClick={() => this.props.activateProfile(this.props.id)}>Activar perfil</Button>
-						<Button style={{marginLeft:"5px",backgroundColor:"#00B844",border:"1px solid #00B844"}} type="primary" onClick={() => this.props.newProfile()}>Nuevo perfil</Button>
+						<Button style={{marginLeft:"4px"}} type="primary" onClick={() => this.props.activateProfile(this.props.id)}>Activar perfil</Button>
+						<Button style={{marginLeft:"4px",backgroundColor:"#00B844",border:"1px solid #00B844"}} type="primary" onClick={() => this.props.newProfile()}>Nuevo perfil</Button>
 					</span>
 				</div>
 			);

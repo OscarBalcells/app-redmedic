@@ -1,11 +1,12 @@
 import React from 'react';
-import { Menu, Icon, Layout } from 'antd';
-const { Header, Content, Footer, Sider } = Layout;
+import { message, Menu, Icon, Layout } from 'antd';
+const {  Header, Content, Footer, Sider } = Layout;
 
 import ProfilesTab from "./contents/ProfilesTab.jsx";
 import Profile from "./logic/Profile.js";
 import Logo from "./contents/Logo.jsx";
 import DocumentTab from "./contents/DocumentTab.jsx";
+
 
 export default class App extends React.Component {
 
@@ -13,18 +14,22 @@ export default class App extends React.Component {
 			super(props);
 			this.state = {
 				selected: 1,
-				activeProfileId: " ",
+				activeProfile: {},
+				hasProfile: false,
 			}
 		}
 
 		//select the first profile in list
 		componentDidMount() {
-			Profile.all().then((profiles) => {
-				if(profiles.length > 0) {
-					this.setState({activeProfileId:profiles[0].id});
-				} else {
-					console.log("No profiles!");
-				}
+			let profile = Profile.all().then((profiles) => {
+				let id = profiles[0].id;
+				this.changeProfile(id);
+			});
+		}
+
+		changeProfile(id) {
+			Profile.getProfileById(id).then((profile) => {
+				this.setState({activeProfile:profile});
 			});
 		}
 
@@ -34,25 +39,24 @@ export default class App extends React.Component {
 		}
 
 		returnSelectedTab() {
-			if(this.state.selected === 2) {
-				return (<ProfilesTab activateProfile={(id) => this.setState({activeProfileId:id})}/>);
-			} else if(this.state.selected == 1) {
-				if(this.state.activeProfileId !== " ") {
-					return (<DocumentTab activeProfile={this.state.activeProfileId}/>);
-				} else {
-					return (<h1>Tienes que añadir un perfil para poder usar esta funcionalidad</h1>);
-				}
-			} else {
-				return (<h1>{this.state.activeProfileName}</h1>);
+			if(this.state.selected === 1) {
+				return (<DocumentTab key={this.state.activeProfile.id} profile={this.state.activeProfile} />);
+			} else if(this.state.selected === 2) {
+				return (<div></div>);
+			} else if(this.state.selected === 3) {
+				return (<ProfilesTab activateProfile={(id) => this.changeProfile(id)}/>);
 			}
 		}
 
     render() {
+			if(this.state.activeProfile != null && this.state.activeProfile.hasOwnProperty("id") == false) {
+				return(<div></div>);
+			} else {
         return (
 					<Layout>
 						<Header>
 							<div>
-								<h1 style={{color:"white",display:"inline",float:"right"}}>{this.state.activeProfileName}</h1>
+								<span style={{color:"#FF0000",fontFamily:"Cormorant Garamond,Sans",fontSize:"35px"}}><b>RedMedic</b></span>
 							</div>
 						</Header>
             <Layout>
@@ -66,27 +70,27 @@ export default class App extends React.Component {
 									<Menu.Item key="1" id="menu-item1"
 									style={{height:"50px"}} onClick={() => this.handleMenuClick(1)}>
 										<div style={{marginTop:"5px"}}>
-											<Icon type="user"
-											style={{fontSize:"18px"}}/>
-											<span className="nav-text" style={{fontSize:"15px"}}>Perfiles</span>
-										</div>
-									</Menu.Item>
-
-									<Menu.Item key="2" id="menu-item2"
-									style={{height:"50px"}} onClick={() => this.handleMenuClick(2)}>
-										<div style={{marginTop:"5px"}}>
 											<Icon type="file-text"
 											style={{fontSize:"18px"}}/>
 											<span className="nav-text" style={{fontSize:"15px"}}>Documento</span>
 										</div>
 									</Menu.Item>
 
+									<Menu.Item key="2" id="menu-item2"
+									style={{height:"50px"}} onClick={() => this.handleMenuClick(2)}>
+										<div style={{marginTop:"5px"}}>
+											<Icon type="security-scan"
+											style={{fontSize:"18px"}}/>
+											<span className="nav-text" style={{fontSize:"15px"}}>Permisos</span>
+										</div>
+									</Menu.Item>
+
 									<Menu.Item key="3" id="menu-item3"
 									style={{height:"50px"}} onClick={() => this.handleMenuClick(3)}>
 										<div style={{marginTop:"5px"}}>
-											<Icon type="dollar"
+											<Icon type="user"
 											style={{fontSize:"18px"}}/>
-											<span className="nav-text" style={{fontSize:"15px"}}>Balance</span>
+											<span className="nav-text" style={{fontSize:"15px"}}>Perfiles</span>
 										</div>
 									</Menu.Item>
 
@@ -96,5 +100,6 @@ export default class App extends React.Component {
 						</Layout>
 					</Layout>
         );
-    }
+    	}
+		}
 }

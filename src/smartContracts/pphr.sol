@@ -8,7 +8,7 @@ contract PartialPHR {
 
     address private patient;
     address public provider;
-    address constant public actaAddr = 0xF8b9217a03B0749c3b6150e53489F3F35Cf20cDf;
+    address payable actaAddr = 0x23702ecb660A2b10e6D1c47c6ECbC8F410980f56;
     Acta acta;
 
     mapping(bytes32 => mapping(address => bool)) public access;
@@ -42,45 +42,49 @@ contract PartialPHR {
         fullAccess[patient] = true;
     }
 
-    //INDEFINITE ACCESS
-
-    function grantAccess(address account, bytes32 section) public {
+		//edit permissions
+		//if nHours == 0 -> indefinite amount of time
+		//else finite amount of time
+		//
+		//if section == all -> will be able to access all sections
+		//else only access sections marked
+    function grantAccess(address account, bytes32 section, uint nHours) public {
         require(msg.sender == patient);
-        access[section][account] = true;
+		if(section == "all") {
+			if(nHours == 0) {
+			    fullAccess[account] = true;
+			} else {
+				uint willBeRevokedAt = block.timestamp + 1 hours * nHours;
+				fullAccessRevokeAt[account] = willBeRevokedAt;
+			}
+	    } else {
+			if(nHours == 0) {
+				access[section][account] = true;
+			} else {
+				uint willBeRevokedAt = block.timestamp + 1 hours * nHours;
+				accessRevokeAt[section][account] = willBeRevokedAt;
+			}
+		}
     }
 
-    function revokeIndefiniteAccess(address account, bytes32 section) public {
+    function revokeAccess(address account, bytes32 section) public {
         require(msg.sender == patient);
-				access[section][account] = false;
+		if(section == "all") {
+			fullAccess[account] = true;
+			fullAccessRevokeAt[account] = 0;
+			//we have to take out all permissions
+			for(uint i = 0; i < sectionList.length; i++) {
+				access[sectionList[i]][account] = false;
+				accessRevokeAt[sectionList[i]][account] = 0;
+			}
+		} else {
+			//revoke everything related to this section
+			access[section][account] = false;
+			accessRevokeAt[section][account] = 0;
+		}
     }
 
-    //FULL INDEFINITE ACCESS
-
-    function grantFullAccess(address account) public {
-        require(msg.sender == patient);
-        fullAccess[account] = true;
-    }
-
-    function revokeFullAccess(address account) public {
-        require(msg.sender == patient);
-        fullAccess[account] = false;
-    }
-
-    //TEMPORARY ACCESS WHICH CAN'T BE REVOKED
-
-    function grantTemporaryAccess(address account, bytes32 section, uint nHours) public {
-        require(msg.sender == patient);
-        uint willBeRevokedAt = block.timestamp + 1 hours * nHours;
-        accessRevokeAt[section][account] = willBeRevokedAt;
-    }
-
-    function grantTemporaryFullAccess(address account, uint nHours) public {
-        require(msg.sender == patient);
-        uint willBeRevokedAt = block.timestamp + 1 hours * nHours;
-        fullAccessRevokeAt[account] = willBeRevokedAt;
-    }
-
-    ///MODIFY SECTIONS (ONLY PROVIDER CAN)
+    ///modify sections
 
     function addSection(bytes32 newSection) public {
         require(msg.sender == provider);
@@ -97,7 +101,7 @@ contract PartialPHR {
         sectionList.length--; //automatically clears last element from array
     }
 
-    ///EXTERNAL QUERY FUNCTIONS
+    ///external query functions
 
     function hasAccess(address account, bytes32 section) public view returns (bool) {
         if(fullAccess[account] == true) return true;
@@ -125,7 +129,7 @@ contract PartialPHR {
 
     function emitNotification() public {
         require(msg.sender == provider);
-        emit Notification("Notification");
+        emit Notification("InformationEdited");
     }
 
 }

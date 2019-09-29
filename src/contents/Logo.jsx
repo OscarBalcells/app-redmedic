@@ -1,13 +1,11 @@
 import React from "react";
-import { Icon } from "antd";
-
 var counter = 1;
 
 export default class Logo extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			imageUrl: "down",
+			imageUrl: "./images/favicons/favicon1.png"
 		}
 	}
 
@@ -23,14 +21,13 @@ export default class Logo extends React.Component {
 		this.dynamicLogo();
 		setInterval(() => {
 			this.dynamicLogo();
-		}, 2000);
+		}, this.props.interval);
 	}
 
 	render() {
 		return (
 			<span>
-				<img style={{width:"20px",height:"20px", marginTop:"10px",marginBottom:"10px",margin:"auto"}} src={this.state.imageUrl} alt="Bitcoin" />
-				<h1 style={{color:"white",display:"inline"}}>RedMedic</h1>
+				<img style={{width:this.props.width,height:this.props.height,marginBottom:"10px"}} src={this.state.imageUrl} alt="" />
 			</span>
 		);
 	}

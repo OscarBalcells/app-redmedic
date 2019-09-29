@@ -5,22 +5,23 @@ import "./acta.sol";
 contract MasterPHR {
 
     struct PPHR {
-        bytes32[] sections;
         bytes32 providerName;
         address providerAddr;
+				bytes32 gateway;
         address pphrAddr;
-        bytes32 gateway;
         bool exists;
     }
 
-    address public actaAddr = 0xF8b9217a03B0749c3b6150e53489F3F35Cf20cDf;
+    address payable public constant actaAddr = 0x23702ecb660A2b10e6D1c47c6ECbC8F410980f56;
     Acta public acta = Acta(actaAddr);
 
     bytes32 public id;
-    address private owner;
+    address private patientAddr;
 
+		//important ones
     mapping (bytes32 => PPHR) private pphrs;
     mapping (bytes32 => PPHR) private pphrsUnconfirmed;
+
     mapping (address => bytes32) private addrToName;
     bytes32[] private providerNameList;
     mapping (bytes32 => uint) gatewayAtIndex;
@@ -28,46 +29,47 @@ contract MasterPHR {
 
     constructor(bytes32 _id) public {
         id = _id;
-        owner = msg.sender;
+        patientAddr = msg.sender;
     }
 
-    function newPPHR(address providerAddr, bytes32[] memory sections) public {
-        require(acta._isMember(providerAddr) == true);
+		//gets sent by the provider who establishes the pphr relationship
+    function newPPHR(address pphrAddr) public {
+        require(acta._isMember(msg.sender) == true);
 
         bytes32 providerName; bytes32 gateway;
-        (providerName, gateway) = acta.getMember(providerAddr);
+        (providerName, gateway) = acta.getMember(msg.sender);
 
         require(pphrs[providerName].exists == false);
         require(pphrsUnconfirmed[providerName].exists == false);
 
         pphrsUnconfirmed[providerName] = PPHR({
-            sections: sections,
             providerName: providerName,
-            providerAddr: providerAddr,
-            pphrAddr: msg.sender,
-            gateway: gateway,
+            providerAddr: msg.sender,
+						gateway: gateway,
+            pphrAddr: pphrAddr,
             exists: true
         });
 
-        addrToName[providerAddr] = providerName;
         addrToName[msg.sender] = providerName;
+        addrToName[pphrAddr] = providerName;
     }
 
+		//gets sent by the patient owner of this contract
     function confirmPPHR(bytes32 name) public {
+				require(msg.sender == patientAddr);
         require(pphrs[name].exists == false);
         require(pphrsUnconfirmed[name].exists == true);
-				require(pphrsUnconfirmed[name].providerAddr == msg.sender);
-				
+
         pphrs[name] = pphrsUnconfirmed[name];
         gateways.push(pphrs[name].gateway);
         gatewayAtIndex[pphrs[name].gateway] = gateways.length-1;
         delete pphrsUnconfirmed[name];
     }
 
-    ///INTERACTION WITH Partial PHR's
+    ///Interaction with Partial PHR's
 
     function deletePPHR(bytes32 name) public {
-        require(msg.sender == owner);
+        require(msg.sender == patientAddr);
         bytes32 gateway;
 
         if(pphrs[name].exists == true) {
@@ -83,24 +85,39 @@ contract MasterPHR {
             revert();
         }
 
+				//delete the gateway from the list
         uint index = gatewayAtIndex[gateway];
         gateways[index] = gateways[gateways.length-1];
         gatewayAtIndex[gateways[index]] = index;
         gateways.length--;
     }
 
+	function grantAccess(bytes32 name, address addr, bytes32 section, uint nHours) public {
+		require(msg.sender == patientAddr);
+		address pphrAddr = pphrs[name].pphrAddr;
+		PartialPHR pphr = PartialPHR(pphrAddr);
+		pphr.grantAccess(addr, section, nHours);
+	}
+
+	function revokeAccess(bytes32 name, address addr, bytes32 section) public {
+		require(msg.sender == patientAddr);
+		address pphrAddr = pphrs[name].pphrAddr;
+		PartialPHR pphr = PartialPHR(pphrAddr);
+		pphr.revokeAccess(addr, section);
+	}
+
     ///EXTERNAL QUERY FUNCTIONS
 
     function returnGateways() public view returns (bytes32[] memory) {
-        require(msg.sender == owner);
+        require(msg.sender == patientAddr);
         return gateways;
     }
 
-    function getPPHR(bytes32 name) public view returns (bytes32[] memory sections, address providerAddr,
+    function getPPHR(bytes32 name) public view returns (address providerAddr,
     address pphrAddr, bytes32 gateway) {
         require(pphrs[name].exists == true);
-        require(msg.sender == owner);
-        return (pphrs[name].sections, pphrs[name].providerAddr,
+        require(msg.sender == patientAddr);
+        return (pphrs[name].providerAddr,
         pphrs[name].pphrAddr, pphrs[name].gateway);
     }
 }

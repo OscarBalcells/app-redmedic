@@ -4,6 +4,7 @@ import Database from "./Database.js";
 var SimpleCrypto = require("simple-crypto-js").default;
 var simpleCrypto = new SimpleCrypto("redmedic");
 
+
 //this creates a class, which represents a profile
 //this profile has some basic identifier data as well
 //as the wallet attached to the profile
@@ -15,6 +16,7 @@ export default class Profile {
 		this.sexo = data["sexo"];
 		this.id = data["id"];
 		this.mnemonic = data["mnemonic"];
+		this.mphr = data["mphr"];
 		//creates the wallet, which is attached to the profile
 		this.wallet = new Wallet(simpleCrypto.decrypt(this.mnemonic));
 		this.foto = data["foto"] === null ? "" : data["foto"];
@@ -69,6 +71,7 @@ export default class Profile {
 			sexo: this.sexo,
 			id: this.id,
 			foto: this.foto,
+			mphr: this.mphr,
 			mnemonic: this.mnemonic,
 			type: "perfil",
 		}

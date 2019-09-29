@@ -4,43 +4,133 @@ const { Header, Content, Footer } = Layout;
 
 import Wallet from "../logic/Wallet.js";
 import Profile from "../logic/Profile.js";
+import RecordSection from "./RecordSection.jsx";
+import Logo from "./Logo.jsx";
+
+const Web3 = require("web3");
+
+var categories = ["allergies", "labs", "procedures", "immunizations", "medications", "conditions", "images"];
+var possibleDates = ["performedDatePeriod","performedPeriod","recordedDate", "date", "dateRecorded",
+"effectiveDateTime", "effectiveTimeDate", "dateWritten",
+"performedDateTime"];
+
+function hex2a(hexx) {
+    var hex = hexx.toString();//force conversion
+    var str = '';
+    for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2)
+        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    return str;
+}
+
+function compare(resourceA, resourceB) {
+	let a = resourceA["date"];
+	let b = resourceB["date"];
+	let d = a.split("-")[0];
+	let m = a.split("-")[1];
+	let y = a.split("-")[2];
+	let totalDaysA = parseInt(d) + parseInt(m)*30 + parseInt(y)*365;
+	d = b.split("-")[0];
+	m = b.split("-")[1];
+	y = b.split("-")[2];
+	let totalDaysB = parseInt(d) + parseInt(m)*30 + parseInt(y)*365;
+	return (totalDaysA < totalDaysB ? 1 : -1);
+}
+
+function getDate(resource) {
+	for(var i = 0; i < possibleDates.length; i++) {
+		if(resource.hasOwnProperty(possibleDates[i])) {
+			let date = null;
+			if(i <= 1) { date = resource[possibleDates[i]]["end"]; }
+			else { date = resource[possibleDates[i]]; }
+			let d = date.split("-")[0];
+			if(d.length == 1) { d = "0"+d; }
+			let m = date.split("-")[1];
+			if(m.length == 1) { m = "0"+m; }
+			let y = date.split("-")[2].slice(0,4);
+			return d+"-"+m+"-"+y;
+		}
+	}
+}
+
+function getSummary(resource) {
+	let type = resource.resourceType;
+	if(type === "AllergyIntolerance") return resource.substance+"  -  "+resource.status;
+	else if(type === "Condition") return resource.code.coding[0].display+"  -  "+resource.clinicalStatus;
+	else if(type === "Immunization") return resource.vaccineCode.text+"  -  "+resource.status;
+	else if(type === "Observation") return resource.code.text+"  -  "+resource.valueQuantity.value+" "+resource.valueQuantity.unit;
+	else if(type === "MedicationOrder") return resource.medicationReference;
+	else if(type === "Procedure") return resource.code.text+"  -  "+resource.status;
+	else if(type === "Images") return resource.notes;
+}
+
+const mphrAbi = '[{"constant":false,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"}],"name":"deletePPHR","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"}],"name":"getPPHR","outputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"},{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"acta","outputs":[{"internalType":"contract Acta","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"gateways","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"actaAddr","outputs":[{"internalType":"address payable","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"id","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"},{"internalType":"address","name":"addr","type":"address"},{"internalType":"bytes32","name":"section","type":"bytes32"}],"name":"revokeAccess","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"pphrAddr","type":"address"}],"name":"newPPHR","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"returnGateways","outputs":[{"internalType":"bytes32[]","name":"","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"},{"internalType":"address","name":"addr","type":"address"},{"internalType":"bytes32","name":"section","type":"bytes32"},{"internalType":"uint256","name":"nHours","type":"uint256"}],"name":"grantAccess","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_id","type":"bytes32"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]';
 
 export default class DocumentTab extends React.Component {
 	constructor(props) {
 		super(props);
-		this.profile = {
-			nombre: "",
-			id: "",
-			wallet: {
-				addr: "nada",
-				privKey: "nada tampoco",
-			}
-		};
-		this.requestAnswer = "";
 		this.state = {
-			fields: {
-				ip: "",
-				port: "",
-				id: "",
-				category: "",
-			},
+			view: "all",
+			personalData: {},
+			labs: [],
+			medications: [],
+			allergies: [],
+			procedures: [],
+			immunizations: [],
+			conditions: [],
+			images: []
 		};
 	}
 
-	fetchStuff(url) {
+	componentDidMount() {
+		this.getData();
+	}
+
+	addData(data, gateway) {
+		let provider = "";
+		//manually identify providers
+		if(gateway == "0.0.0.0:5000") { provider = "Clínica Corachan"; }
+		else if(gateway == "0.0.0.0:5001") { provider = "Hospital el Pilar"; }
+		else if(gateway == "0.0.0.0:5002") { provider = "Centro Médico Teknon" }
+		var that = this;
+
+		categories.forEach(function (category) {
+			let list = [];
+			for(let i = 0; i < data[category].length; i++) {
+				let resource = data[category][i];
+				resource["provider"] = provider;
+				resource["date"] = getDate(resource);
+				resource["summary"] = getSummary(resource);
+				list.push(resource);
+			}
+			//we sort by dates
+			let newState = that.state;
+			newState[category] = newState[category].concat(list);
+			newState[category].sort(compare);
+			that.setState({ state:newState });
+		});
+
+		if(this.state.personalData.hasOwnProperty("display") === false) {
+			this.setState({personalData:data["personalData"]});
+		}
+
+		console.log("Data successfully fetched from gateway "+ gateway);
+	}
+
+	fetchUrl(url) {
 		return new Promise(function (resolve,reject) {
 			var xhr = new XMLHttpRequest();
 			xhr.open("GET", url, true);
 			xhr.onload = function() {
 				var status = xhr.status;
-				if(status == 200) {
+				if(status > 400 || status == 200) {
 					const response = JSON.parse(xhr.responseText);
-					if(response.hasOwnProperty("ErrorMessage")) {
+					if(status != 200 || response.hasOwnProperty("ErrorMessage")) {
+						message.error("An error ocurred when querying url: "+ url + ", error response is: " + response["ErrorMessage"]);
 						reject(status);
 					} else {
 						resolve(response["data"]);
 					}
-				} else {
+				} else { //Unknown error
 					reject(status);
 				}
 			};
@@ -48,106 +138,84 @@ export default class DocumentTab extends React.Component {
 		});
 	}
 
-	async queryData() {
+  //returns 0 if everything ok, else returns 1
+	async request(gateway, id, category) {
 		try {
-			let sig = this.profile.wallet.signData("nonce");
-			let url = "http://"+this.state.fields.ip+":"+this.state.fields.port+"/nonce/"+this.state.fields.id+"&"+sig;
-			const nonce = await this.fetchStuff(url);
+			let sig = this.props.profile.wallet.signData("nonce");
+			let url = "http://"+gateway+"/nonce/"+id+"&"+sig;
+			const nonce = await this.fetchUrl(url);
 
-			const message = this.state.fields.id + "," + this.state.fields.category + "," + nonce.toString();
-			sig = this.profile.wallet.signData(message);
-			url = "http://"+this.state.fields.ip+":"+this.state.fields.port+"/patient/" + this.state.fields.id + "&" +
-			this.state.fields.category + "&" + nonce + "&" + sig;
-			const data = await this.fetchStuff(url);
-
-			console.log("Data:",data);
-			//Do something useful with data
-
-		} catch (err) {
-			console.log(err);
-			message.error("An error ocurred:" + err)
+			const message = id + "," + category + "," + nonce.toString();
+			sig = this.props.profile.wallet.signData(message);
+			url = "http://"+gateway+"/patient/"+id+"&"+category+"&"+nonce+"&"+sig;
+			const data = await this.fetchUrl(url);
+			this.addData(data, gateway);
+		} catch(exception) {
+			console.log("Exception ocurred:", exception);
 		}
 	}
 
-	request() {
-		this.queryData().then(function () {
-			message.success("Data retrieved successfully");
-		})
-	}
+	//returns all the data from every single pphr
+	async getData() {
+		//first we have to find out all the gateways we have to query
+		var that = this;
+		let web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io"));
+		if(web3.eth.getCode(this.props.profile.mphr) == '0x0' && web3.eth.getCode(this.props.profile.mphr) == '0x') {
+			console.log("Nothing at address");
+			return;
+		}
+		let mphr = new web3.eth.Contract(JSON.parse(mphrAbi));
+		mphr.options.address = this.props.profile.mphr;
 
-	componentDidMount() {
-		Profile.getProfileById(this.props.activeProfile).then((profile) => {
-			this.profile = profile;
-			this.setState({ state: this.state });
+		let gateways = [];
+		mphr.methods.returnGateways().call({}, function (error, result) {
+			if(error) {
+				throw (error);
+			}
+			for(var i = 0; i < result.length; i++) {
+				let gateway = hex2a(result[i]).slice(1);
+				that.request(gateway, that.props.profile.id, "all");
+			}
 		});
 	}
 
-	changeField(e, field) {
-		var fields = this.state.fields;
-		fields[field] = e.target.value;
-		this.setState({fields:fields});
+	returnContent() {
+		if(this.state.view === "all") {
+			var sections = [];
+			var last = 0;
+
+			for(var i = 0; i < categories.length; i++) {
+				let cat = categories[i];
+				if(this.state[cat].length !== 0) last = i;
+			}
+
+			for(var i = 0; i <= last; i++) {
+				let cat = categories[i];
+				if(this.state[cat].length === 0) continue;
+				sections.push(
+					<RecordSection key={cat} marginBottom={(i === last ? "80px" : "0px")} section={cat} data={this.state[cat]} individual={false} changeView={(newView) => this.setState({view:newView})} />
+				);
+			}
+			return sections;
+		} else {
+			let cat = this.state.view;
+			if(categories.indexOf(cat) !== -1) {
+				return (<RecordSection section={cat} data={this.state[cat]} individual={true} changeView={(newView) => this.setState({view:newView})} />);
+			} else {
+				return (<div>Full record only!</div>);
+			}
+		}
 	}
 
 	render() {
+		//not until we have data
+		if(this.state.personalData.hasOwnProperty("display") === false) {
+			return (<div style={{marginLeft:"210px"}}><div style={{marginLeft:"350px",marginTop:"250px"}} className="lds-ripple"><div></div><div></div></div></div>);
+		}
 		return (
-			<Layout style={{height:"100vh",marginLeft:"205px"}}>
-				<h1 style={{marginLeft:"10px",marginTop:"10px"}}>Hola, Vamos a probar la API</h1>
-				<h1 style={{marginLeft:"10px",marginBottom:"10px"}}>
-					Ahora mismo estas usando el perfil con:<br />
-					Nombre:  <b>{this.profile.nombre}</b><br />
-					Id:  <b>{this.profile.id}</b><br />
-					Addr:  <b>{this.profile.wallet.addr}</b><br />
-					PrivKey:  <b>{this.profile.wallet.privKey}</b>
-				</h1>
-				<Form style={{marginLeft:"10px"}}>
-					<Form.Item label="Ip del punto de conexión del proveedor">
-							<Input
-								style={{width:"200px"}}
-								prefix={<Icon type="user" style={{color:"rgba(0,0,0,.25)"}} />}
-								placeholder="192.168.0.1"
-								value={this.state.fields.ip}
-								onChange={(e) => this.changeField(e, "ip")}
-							/>
-					</Form.Item>
-					<Form.Item label="Puerto del punto de conexión del proveedor">
-						<Input
-							style={{width:"200px"}}
-							prefix={<Icon type="user" style={{color:"rgba(0,0,0,.25)"}} />}
-							placeholder="5555"
-							value={this.state.fields.port}
-							onChange={(e) => this.changeField(e, "port")}
-						/>
-					</Form.Item>
-					<Form.Item label="Id del paciente a cuyo expediente quieres acceder">
-						<Input
-							style={{width:"200px"}}
-							prefix={<Icon type="user" style={{color:"rgba(0,0,0,.25)"}} />}
-							placeholder="123456789"
-							value={this.state.fields.id}
-							onChange={(e) => this.changeField(e, "id")}
-						/>
-					</Form.Item>
-					<Form.Item label="Categoria a la que quieres acceder">
-						<Input
-							style={{width:"200px"}}
-							prefix={<Icon type="user" style={{color:"rgba(0,0,0,.25)"}} />}
-							placeholder="labs"
-							value={this.state.fields.category}
-							onChange={(e) => this.changeField(e, "category")}
-						/>
-					</Form.Item>
-				</Form>
-				<div>
-					<Button
-						style={{marginLeft:"10px",border:"1px solid #00B844",width:"200px",height:"30px",backgroundColor:"#00B844"}}
-						type="primary" onClick={() => this.request()}>
-						Enviar Request
-					</Button>
-				</div>
-				<div style={{marginLeft:"10px",marginTop:"10px"}}>
-					{this.requestAnswer}
-				</div>
-			</Layout>
+			<div style={{marginLeft:"210px",marginBottom:"500px"}}>
+				{this.returnContent()}
+			</div>
 		);
 	}
 }

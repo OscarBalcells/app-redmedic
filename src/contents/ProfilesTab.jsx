@@ -27,6 +27,7 @@ export default class ProfilesTab extends React.Component {
 
 	componentDidMount() {
 		this.retrieveProfiles();
+		this.setState({ mounted:true });
 	}
 
 	retrieveProfiles() {
@@ -55,7 +56,7 @@ export default class ProfilesTab extends React.Component {
 	//navigate through all of them
 	returnProfileTabs() {
 		let tabs = this.state.profiles.map((profile) =>
-			<Tabs.TabPane key={profile[0]} tab={<span>{profile[1]}</span>}>
+			<Tabs.TabPane key={profile[0]} tab={<span>{profile[1]}</span>} >
 				<ProfileContent id={profile[0]} activateProfile={(id) => this.props.activateProfile(id)} mounted={() => this.setState({mounted:true})} newProfile={() => this.startForm()} />
 			</Tabs.TabPane>
 		);
@@ -65,12 +66,12 @@ export default class ProfilesTab extends React.Component {
 	render() {
 		var addButton = "";
 		if(this.state.profiles.length === 0 && this.state.mounted !== false) {
-			addButton = (<Button style={{margin:"5px",width:"120px",alignText:"centre",backgroundColor:"#00B844",border:"1px solid #00B844"}} type="primary" onClick={() => this.startForm()}>Nuevo perfil</Button>);
+			//addButton = (<Button style={{margin:"5px",width:"120px",alignText:"centre",backgroundColor:"#00B844",border:"1px solid #00B844"}} type="primary" onClick={() => this.startForm()}>Nuevo perfil</Button>);
 		}
 		return(
 			<Layout style={{marginLeft:"200px",height:"100vh"}}>
 				{addButton}
-				<Tabs defaultActiveKey="2" style={{ padding: "16px" }}>
+				<Tabs defaultActiveKey="2" style={{ padding: "16px", height:"100vh" }}>
 					{this.returnProfileTabs()}
 				</Tabs>
 				<Modal
@@ -80,6 +81,7 @@ export default class ProfilesTab extends React.Component {
 				>
 					<NewProfileForm onSubmit={(fields) => this.profileCreated(fields)} resetValues={this.state.resetValues}/>
 				</Modal>
+				<Footer style={{height:"0px"}} />
 			</Layout>
 		);
 	}
