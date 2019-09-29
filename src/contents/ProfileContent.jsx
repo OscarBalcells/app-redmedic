@@ -163,10 +163,10 @@ export default class ProfileContent extends React.Component {
 									/>
 							</Form.Item>
 					</Form>
-					<span style={{position:"absolute",right:"10px",top:"90%"}}>
-						<Button style={{border:"1px solid #bae7ff"}} type="secondary" onClick={() => this.updateProfile()}>Actualizar datos</Button>
-						<Button style={{marginLeft:"4px"}} type="primary" onClick={() => this.props.activateProfile(this.props.id)}>Activar perfil</Button>
-						<Button style={{marginLeft:"4px",backgroundColor:"#00B844",border:"1px solid #00B844"}} type="primary" onClick={() => this.props.newProfile()}>Nuevo perfil</Button>
+					<span style={{position:"absolute",right:"10px",top:"92%"}}>
+						<Button style={{border:"1px solid #40a9ff"}} type="secondary" onClick={() => this.updateProfile()}>Actualizar datos</Button>
+						<Button style={{marginLeft:"4px"}} type="danger" onClick={() => this.props.activateProfile(this.props.id)}>Activar perfil</Button>
+						<Button style={{marginLeft:"4px",backgroundColor:"white",border:"1px solid #00B844",color:"#00B844"}} type="primary" onClick={() => this.props.newProfile()}>Nuevo perfil</Button>
 					</span>
 				</div>
 			);

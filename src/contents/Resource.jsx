@@ -59,7 +59,7 @@ export default class Resource extends React.Component {
 	render() {
 		return (
 			<div style={{marginBottom:"10px"}}>
-				<h1 style={{textDecoration:"underline",fontSize:"20px"}}>{this.props.r.summary.split(" -  ")[0]}</h1>
+				<h1 style={{textDecoration:"underline",fontSize:"20px",color:"#1E82DA"}}>{this.props.r.summary.split(" -  ")[0]+"  -  "+this.props.section}</h1>
 				{this.returnFields()}
 			</div>
 		);

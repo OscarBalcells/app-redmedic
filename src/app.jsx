@@ -56,7 +56,7 @@ export default class App extends React.Component {
 					<Layout>
 						<Header>
 							<div>
-								<span style={{color:"#FF0000",fontFamily:"Cormorant Garamond,Sans",fontSize:"35px"}}><b>RedMedic</b></span>
+								<span className="redmedic"><b>RedMedic</b></span>
 							</div>
 						</Header>
             <Layout>

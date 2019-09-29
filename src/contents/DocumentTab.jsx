@@ -65,6 +65,7 @@ function getSummary(resource) {
 
 const mphrAbi = '[{"constant":false,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"}],"name":"deletePPHR","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"}],"name":"getPPHR","outputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"},{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"acta","outputs":[{"internalType":"contract Acta","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"gateways","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"actaAddr","outputs":[{"internalType":"address payable","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"id","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"},{"internalType":"address","name":"addr","type":"address"},{"internalType":"bytes32","name":"section","type":"bytes32"}],"name":"revokeAccess","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"pphrAddr","type":"address"}],"name":"newPPHR","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"returnGateways","outputs":[{"internalType":"bytes32[]","name":"","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"},{"internalType":"address","name":"addr","type":"address"},{"internalType":"bytes32","name":"section","type":"bytes32"},{"internalType":"uint256","name":"nHours","type":"uint256"}],"name":"grantAccess","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_id","type":"bytes32"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]';
 
+
 export default class DocumentTab extends React.Component {
 	constructor(props) {
 		super(props);
@@ -179,28 +180,25 @@ export default class DocumentTab extends React.Component {
 		});
 	}
 
+	changeView(newView) {
+		this.setState({view:newView});
+		window.scrollTo(0,0);
+	}
+
 	returnContent() {
 		if(this.state.view === "all") {
-			var sections = [];
-			var last = 0;
-
+			let sections = [];
 			for(var i = 0; i < categories.length; i++) {
-				let cat = categories[i];
-				if(this.state[cat].length !== 0) last = i;
-			}
-
-			for(var i = 0; i <= last; i++) {
-				let cat = categories[i];
-				if(this.state[cat].length === 0) continue;
+				if(this.state[categories[i]].length === 0) continue;
 				sections.push(
-					<RecordSection key={cat} marginBottom={(i === last ? "80px" : "0px")} section={cat} data={this.state[cat]} individual={false} changeView={(newView) => this.setState({view:newView})} />
+					<RecordSection key={categories[i]} section={categories[i]} data={this.state[categories[i]]} individual={false} changeView={(newView) => this.setState({view:newView})} />
 				);
 			}
 			return sections;
 		} else {
 			let cat = this.state.view;
 			if(categories.indexOf(cat) !== -1) {
-				return (<RecordSection section={cat} data={this.state[cat]} individual={true} changeView={(newView) => this.setState({view:newView})} />);
+				return (<RecordSection section={cat} data={this.state[cat]} individual={true} changeView={(newView) => this.changeView(newView)} />);
 			} else {
 				return (<div>Full record only!</div>);
 			}
@@ -213,9 +211,9 @@ export default class DocumentTab extends React.Component {
 			return (<div style={{marginLeft:"210px"}}><div style={{marginLeft:"350px",marginTop:"250px"}} className="lds-ripple"><div></div><div></div></div></div>);
 		}
 		return (
-			<div style={{marginLeft:"210px",marginBottom:"500px"}}>
+			<Layout style={{marginLeft:"210px"}}>
 				{this.returnContent()}
-			</div>
+			</Layout>
 		);
 	}
 }
