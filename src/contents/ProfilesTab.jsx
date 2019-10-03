@@ -20,8 +20,7 @@ export default class ProfilesTab extends React.Component {
 			resetValues: false,
 			visible: false,
 			profiles: [],
-			selected: 1,
-			mounted: false,
+			selected: 1
 		}
 	}
 
@@ -57,7 +56,7 @@ export default class ProfilesTab extends React.Component {
 	returnProfileTabs() {
 		let tabs = this.state.profiles.map((profile) =>
 			<Tabs.TabPane key={profile[0]} tab={<span>{profile[1]}</span>} >
-				<ProfileContent id={profile[0]} activateProfile={(id) => this.props.activateProfile(id)} mounted={() => this.setState({mounted:true})} newProfile={() => this.startForm()} />
+				<ProfileContent id={profile[0]} activateProfile={(id) => this.props.activateProfile(id)} newProfile={() => this.startForm()} />
 			</Tabs.TabPane>
 		);
 		return tabs;
@@ -65,9 +64,6 @@ export default class ProfilesTab extends React.Component {
 
 	render() {
 		var addButton = "";
-		if(this.state.profiles.length === 0 && this.state.mounted !== false) {
-			//addButton = (<Button style={{margin:"5px",width:"120px",alignText:"centre",backgroundColor:"#00B844",border:"1px solid #00B844"}} type="primary" onClick={() => this.startForm()}>Nuevo perfil</Button>);
-		}
 		return(
 			<Layout style={{marginLeft:"200px",height:"100vh"}}>
 				{addButton}

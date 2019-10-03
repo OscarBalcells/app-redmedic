@@ -54,7 +54,6 @@ export default class ProfileContent extends React.Component {
 				this.setState({fields:fields});
 				this.profile = profile;
 			});
-			this.props.mounted();
 		}
 
 		//Update Button was clicked so now the profile data will be matched

@@ -20,6 +20,7 @@ export default class Profile {
 		//creates the wallet, which is attached to the profile
 		this.wallet = new Wallet(simpleCrypto.decrypt(this.mnemonic));
 		this.foto = data["foto"] === null ? "" : data["foto"];
+		this.nonce = data["nonce"];
 	}
 
 	//Database helper functions for retrieving and storing profiles
@@ -73,6 +74,7 @@ export default class Profile {
 			foto: this.foto,
 			mphr: this.mphr,
 			mnemonic: this.mnemonic,
+			nonce: this.nonce,
 			type: "perfil",
 		}
 		return obj;

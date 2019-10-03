@@ -6,6 +6,7 @@ import ProfilesTab from "./contents/ProfilesTab.jsx";
 import Profile from "./logic/Profile.js";
 import Logo from "./contents/Logo.jsx";
 import DocumentTab from "./contents/DocumentTab.jsx";
+import PermissionsTab from "./contents/PermissionsTab.jsx";
 
 
 export default class App extends React.Component {
@@ -42,9 +43,11 @@ export default class App extends React.Component {
 			if(this.state.selected === 1) {
 				return (<DocumentTab key={this.state.activeProfile.id} profile={this.state.activeProfile} />);
 			} else if(this.state.selected === 2) {
-				return (<div></div>);
+				return (<PermissionsTab key={this.state.activeProfile.id} profile={this.state.activeProfile} />);
 			} else if(this.state.selected === 3) {
 				return (<ProfilesTab activateProfile={(id) => this.changeProfile(id)}/>);
+			} else if(this.state.selected === 4) {
+				return (<div>Busqueda todavia por acabar</div>);
 			}
 		}
 
@@ -91,6 +94,15 @@ export default class App extends React.Component {
 											<Icon type="user"
 											style={{fontSize:"18px"}}/>
 											<span className="nav-text" style={{fontSize:"15px"}}>Perfiles</span>
+										</div>
+									</Menu.Item>
+
+									<Menu.Item key="4" id="menu-item4"
+									style={{height:"50px"}} onClick={() => this.handleMenuClick(4)}>
+										<div style={{marginTop:"5px"}}>
+											<Icon type="search"
+											style={{fontSize:"18px"}}/>
+											<span className="nav-text" style={{fontSize:"15px"}}>Busqueda</span>
 										</div>
 									</Menu.Item>
 

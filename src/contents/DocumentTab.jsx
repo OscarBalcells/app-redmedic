@@ -5,7 +5,6 @@ const { Header, Content, Footer } = Layout;
 import Wallet from "../logic/Wallet.js";
 import Profile from "../logic/Profile.js";
 import RecordSection from "./RecordSection.jsx";
-import Logo from "./Logo.jsx";
 
 const Web3 = require("web3");
 
@@ -150,6 +149,7 @@ export default class DocumentTab extends React.Component {
 			sig = this.props.profile.wallet.signData(message);
 			url = "http://"+gateway+"/patient/"+id+"&"+category+"&"+nonce+"&"+sig;
 			const data = await this.fetchUrl(url);
+			console.log("Adding data from gateway "+gateway);
 			this.addData(data, gateway);
 		} catch(exception) {
 			console.log("Exception ocurred:", exception);
@@ -159,12 +159,13 @@ export default class DocumentTab extends React.Component {
 	//returns all the data from every single pphr
 	async getData() {
 		//first we have to find out all the gateways we have to query
+		/* no internet usage when this is disabled
 		var that = this;
 		let web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io"));
-		if(web3.eth.getCode(this.props.profile.mphr) == '0x0' && web3.eth.getCode(this.props.profile.mphr) == '0x') {
-			console.log("Nothing at address");
-			return;
-		}
+		//if(web3.eth.getCode(this.props.profile.mphr) == '0x0' || web3.eth.getCode(this.props.profile.mphr) == '0x') {
+			//console.log("Nothing at address");
+			//return;
+		//}
 		let mphr = new web3.eth.Contract(JSON.parse(mphrAbi));
 		mphr.options.address = this.props.profile.mphr;
 
@@ -178,6 +179,11 @@ export default class DocumentTab extends React.Component {
 				that.request(gateway, that.props.profile.id, "all");
 			}
 		});
+		*/
+		let gateways = ["localhost:5000","0.0.0.0:5001","0.0.0.0:5002"];
+		for(var i = 0; i < gateways.length; i++) {
+			this.request(gateways[i], this.props.profile.id, "all");
+		}
 	}
 
 	changeView(newView) {
@@ -206,6 +212,7 @@ export default class DocumentTab extends React.Component {
 	}
 
 	render() {
+		console.log(this.state);
 		//not until we have data
 		if(this.state.personalData.hasOwnProperty("display") === false) {
 			return (<div style={{marginLeft:"210px"}}><div style={{marginLeft:"350px",marginTop:"250px"}} className="lds-ripple"><div></div><div></div></div></div>);

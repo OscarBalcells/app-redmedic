@@ -59,6 +59,7 @@
     "electron-compile": "^6.4.2",
     "electron-devtools-installer": "^2.1.0",
     "electron-squirrel-startup": "^1.0.0",
+    "ethereumjs-tx": "^2.1.0",
     "ethereumjs-util": "^6.1.0",
     "hdkey": "^1.1.1",
     "less": "^3.9.0",
