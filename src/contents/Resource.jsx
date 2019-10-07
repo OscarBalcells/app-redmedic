@@ -26,9 +26,7 @@ function cleanString(string) {
 			}
 
 			if(string[i] === "{" || string[i] === "}") newString += "<b>"
-
 			newString += string[i];
-
 			if(string[i] === "," || (string[i] === ":" && !(string[i-2] === "t" && string[i-1] === "p"))) newString += ' ';
 			if(string[i] === "{" || string[i] === "}") newString += "</b>"
 		}
@@ -57,6 +55,7 @@ export default class Resource extends React.Component {
 	}
 
 	render() {
+		console.log(this.props.r);
 		return (
 			<div style={{marginBottom:"10px"}}>
 				<h1 style={{textDecoration:"underline",fontSize:"20px",color:"#1E82DA"}}>{this.props.r.summary.split(" -  ")[0]+"  -  "+this.props.section}</h1>

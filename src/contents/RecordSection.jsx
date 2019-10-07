@@ -12,49 +12,48 @@ let gradients = {
 	"allergies": "linear-gradient(#b30086,#ff00bf)",
 	"labs": "linear-gradient(#6691ff,#3f2b96)",
 	"procedures": "linear-gradient(#00B4DB,#00B4DB)",
-	"immunizations": "linear-gradient(#F00000, #DC281E)",
-	"medications": "linear-gradient(#33ff77,#00b33c)",
+	"immunizations": "linear-gradient(#33ff77,#00b33c)",
+	"medications": "linear-gradient(#F00000, #DC281E)",
 	"conditions": "linear-gradient(#00cccc,#008080)",
-	"images": "linear-gradient(#ff1aff,#e600e6)"
+	"images": "linear-gradient(#ff1aff,#e600e6)",
+	"personalData": "linear-gradient(rgba(219,40,40,1), rgba(252,124,69,1))"
 }
 
 export default class RecordSection extends React.Component {
 		returnResources() {
 			//return summaries
-			let sectionSingular = firstCapitalize((this.props.section !== "allergies") ? this.props.section.slice(0,-1) : this.props.section.slice(0,-3)+"y");
+			let sectionSingular;
+			if(this.props.section === "allergies") sectionSingular = "Allergy";
+			else if(this.props.section === "personalData") sectionSingular = "Personal Data Segment";
+			else sectionSingular = this.props.section.slice(0,-1);
 			if(this.props.individual === false) {
-				return this.props.data.map((resource) =>
-					<Panel key={resource.id} header={resource.summary+"  -  "+resource.date}>
-						<Resource key={resource.id} r={resource} section={sectionSingular}/>
-					</Panel>
-				);
+				return this.props.data.map((resource) => {
+						console.log(resource);
+						return (<Panel key={resource.id} header={resource.summary+"  -  "+resource.date}>
+							<Resource key={resource.id} r={resource} section={sectionSingular}/>
+						</Panel>);
+				});
 			} else {
-				return this.props.data.map((resource) =>
-					<Resource key={resource.id} style={{marginTop:"5px"}} r={resource} section={sectionSingular}/>
-				);
+				return this.props.data.map((resource) => {
+					console.log(resource);
+					return (<Resource key={resource.id} style={{marginTop:"5px"}} r={resource} section={sectionSingular}/>);
+				});
 			}
 		}
 
 		render() {
-			let backButton = "";
 			if(this.props.individual === true) {
-				backButton = (
-					<Button type="danger" style={{width:"98%",marginRight:"2%"}} onClick={() => this.props.changeView("all")}>
-						Volver Al Inicio
-					</Button>
+				let backButton = (this.props.noBack === true ? "" : <Button type="danger" style={{width:"98%",marginRight:"2%"}} onClick={() => this.props.changeView("all")}>Volver Al Inicio</Button>);
+				return (
+					<div style={{marginTop:"15px",marginLeft:"10px"}}>
+						{this.returnResources()}
+						{backButton}
+					</div>
 				);
 			}
 
-			let content;
-			if(this.props.individual === false) {
-				content = (
-					<Collapse style={{marginRight:"10px"}}>
-						{this.returnResources()}
-					</Collapse>
-				);
-			} else {
-				content = this.returnResources();
-			}
+			let title = firstCapitalize(this.props.section);
+			if(title === "PersonalData") title = "Personal Data";
 
 			return (
 				<div style={{marginTop:"15px",marginLeft:"10px"}}>
@@ -64,8 +63,9 @@ export default class RecordSection extends React.Component {
 						<img src={"./images/"+this.props.section+".png"} width="25px" height="25px"/>
 						<b>{firstCapitalize(this.props.section)}</b>
 					</div>
-					{content}
-					{backButton}
+					<Collapse style={{marginRight:"10px"}}>
+						{this.returnResources()}
+					</Collapse>
 				</div>
 			);
 		}

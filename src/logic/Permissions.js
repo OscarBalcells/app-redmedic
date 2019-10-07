@@ -4,33 +4,33 @@ import Profile from "./Profile.js";
 const Web3 = require("web3");
 const ethereumjs = require("ethereumjs-tx");
 
-let validCats = ["all","none","allergies","conditions","immunizations",
+let validCats = ["all","allergies","conditions","immunizations",
 "labs","medications","procedures","images"];
 
 //this creates a class, which represents a certain permission
-//a permition is basically a mapping of addresses to specific access rights to -> [all, indf, temp]
-//each permission is linked by the id of the patient and the address of the pphr
-//permission_identifier = "id:pphrAddr"
-//each permission is a list of objects
-//the permissions object looks like this:
+//a permition is basically a mapping of addresses to specific access rights
 /*
-permissions[id] = {
-	addr1: {
-		all": true/false;
-		"indf": ["labs", "allergies", "conditions",...];
-		"temp": [
-			"procedures": "17-11-2019:16",
-			"images": "19-11-2019:23",
-		]
-	},
-	addr2: {
-		all": true/false;
-		"indf": ["labs", "allergies", "conditions",...];
-		"temp": {
-			"procedures": "17-11-2019:16",
-			"images": "19-11-2019:23",
+{
+	"id": "0x...",
+	"nonce": 0,
+	"name": "Corachan",
+	"profileId": "123456789",
+	"rights": {
+		"0x...": {
+			display: "researcher",
+			categories: "allergies, labs"
 		}
 	}
+	"rights": [
+	{
+		"display": "researcher at UB",
+		"categories": "all"
+	},
+	{
+		"display": "hospital X",
+		"categories": "labs, allergies"
+	}
+	]
 }
 */
 
@@ -48,11 +48,146 @@ const mphrAbi = '[{"constant":false,"inputs":[{"internalType":"bytes32","name":"
 export default class Permissions {
 	//doc is an Object with the parameters id and pphrAddr -> {id,pphrAddr}
 	constructor(doc) {
-		this.patientId = doc["patientId"];
-		this.pphrAddr = doc["pphrAddr"];
-		this.id = this.patientId+":"+this.pphrAddr;
-		this.addrs = Permissions.addrsStrToObject(doc["addrs"]);
+		this.id = doc["id"];
 		this.nonce = 0;
+		this.name = doc["name"];
+		this.profileId = doc["profileId"];
+		this.rights = Permissions.decode(doc["rights"]);
+	}
+
+	getAdded() {
+		let addrs = [];
+		for(let prop in this.rights) if(Object.prototype.hasOwnProperty.call(this.rights,prop)) {
+			addrs.push(prop);
+		}
+		return addrs;
+	}
+
+	applyChanges(newStr, addr) {
+		let prev = {};
+		let now = {};
+
+		for(let cat in this.rights[addr].categories.split(", ")) prev[cat] = true;
+		for(let cat in newStr.split(", ")) now[cat] = true;
+
+		for(let cat in validCats) {
+			if(prev[cat] !== now[cat]) {
+				if(prev[cat] === true && now[cat] !== true) revokeAccess(addr, cat);
+				else if(prev[cat] !== true && now[cat] === true) grantAccess(addr, cat);
+			}
+		}
+
+		this.rights[addr] = newStr;
+	}
+
+	//to which address, what sections and the name of the pphr
+	grantAccess(addr, section) {
+		let that = this;
+		let profile = Profile.getProfileById(this.profileId).then((profile) => {
+			let web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io"));
+			let privateKey = new Buffer(profile.wallet.privKey, "hex");
+			let mphr = new web3.eth.Contract(JSON.parse(mphrAbi));
+			let data = mphr.methods.grantAccess(web3.utils.fromAscii(that.name).padEnd(66,'0'),addr,web3.utils.fromAscii(section).padEnd(66,'0'),0).encodeABI();
+
+			let tx = new ethereumjs.Transaction({
+				nonce: that.nonce,
+				gasPrice: web3.utils.toHex(web3.utils.toWei("20","gwei")),
+				gasLimit: 500000,
+				to: profile.mphr,
+				value: 0,
+				data: data
+			}, {'chain':'rinkeby'});
+
+			tx.sign(privateKey);
+			var raw = '0x'+tx.serialize().toString("hex");
+			that.nonce++; //very important!
+
+			try {
+				web3.eth.sendSignedTransaction(raw, function(error,transactionHash) {
+					if("Error",error) {
+						console.log(error);
+					} else {
+						console.log("Revoke-Permission tx sent successfully:",transactionHash);
+					}
+				});
+			} catch(error) {
+				console.log(error);
+			}
+		});
+		sleep(100);
+	}
+
+	revokeAccess(addr, section) {
+		let that = this;
+		let profile = Profile.getProfileById(this.patientId).then((profile) => {
+			let web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io"));
+			let privateKey = new Buffer(profile.wallet.privKey, "hex");
+			let mphr = new web3.eth.Contract(JSON.parse(mphrAbi));
+			let data = mphr.methods.revokeAccess(web3.utils.fromAscii(that.name).padEnd(66,'0'),addr,web3.utils.fromAscii(section).padEnd(66,'0')).encodeABI();
+
+			let tx = new ethereumjs.Transaction({
+				nonce: that.nonce,
+				gasPrice: web3.utils.toHex(web3.utils.toWei("20","gwei")),
+				gasLimit: 500000,
+				to: profile.mphr,
+				value: 0,
+				data: data
+			}, {'chain':'rinkeby'});
+
+			tx.sign(privateKey);
+			var raw = '0x'+tx.serialize().toString("hex");
+
+			that.nonce++; //very important!
+
+			web3.eth.sendSignedTransaction(raw, function(error,transactionHash) {
+				if("Error",error) {
+					console.log(error);
+				}
+				console.log("Revoke-Permission tx sent successfully:",transactionHash);
+			});
+		});
+	}
+
+	static encode(array) {
+		let str = "";
+		for(let i = 0; i < array.length; i++) {
+			if(i > 0) str += "...";
+			let el = array[i];
+			let tstr = "";
+			tstr += el["display"];
+			tstr += ",,,";
+			tstr += el["categories"];
+			str += tstr;
+		}
+		return str;
+	}
+
+	static decode(str) {
+		let array = [];
+		let els = str.split("...");
+		for(let i = 0; i < els.length; i++) {
+			let el = els[i];
+			let display = el.split(",,,")[0];
+			let categories = el.split("...")[1];
+			let obj = {
+				"display": display,
+				"categories": categories
+			}
+			array.push(obj);
+		}
+		return array;
+	}
+
+	toObject() {
+		let rightsStr = Permissions.encode(this.rights);
+		const obj = {
+			id: this.id,
+			name: this.name,
+			profileId: this.profileId,
+			rights: rightsStr,
+			type: "permissions"
+		}
+		return obj;
 	}
 
 	//Database helper functions for retrieving and storing profiles
@@ -90,215 +225,6 @@ export default class Permissions {
 	update() {
 		this.erase();
 		this.save();
-	}
-
-	static strToObject(_str) {
-		//str is a string as represented in permissions container
-		let str = "";
-		for(let i = 0; i < _str.length; i++) { if(str[i] !== " ") str += _str[i]; }
-
-		if(str.toLowerCase(str) !== "all" && str.toLowerCase(str) !== "none") {
-			let elements = str.split(",");
-			for(let el in elements) {
-				let ind = el.indexOf("[");
-				if(ind !== -1) {
-					let date = el.slice(ind+1,el.length-1);
-					let cat = el.slice(0,ind-1).toLowerCase();
-					if(!(cat in validCats)) return undefined;
-					if(date.indexOf(":") === -1) return undefined;
-				} else {
-					if(!(el in validCats)) { console.log(el); return undefined; }
-				}
-			}
-		}
-
-		let object;
-
-		if(str === "all" || str === "All") {
-			object = {
-				"all": true,
-				"indf": [],
-				"temp": {}
-			}
-		} else if(str == "none" || str === "None") {
-			object = {
-				"all": false,
-				"indf": [],
-				"temp": {}
-			}
-		} else {
-			let indfCats = [];
-			let tempCats = [];
-			let elements = str.split(",");
-			for(let i = 0; i < elements.length; i++) {
-				let el = elements[i];
-				if(el[0] !== " ") indfCats.push(el);
-				else indfCats.push(el.slice(1));
-			}
-			object = {
-				"all": false,
-				"indf": indfCats,
-				"temp": tempCats
-			}
-		}
-		return object;
-	}
-
-	//pass object to string
-	static objectToStr(object) {
-		if(object["all"] === true) {
-			return "all";
-		}
-
-		let str = "";
-		for(let i = 0; i < object["indf"].length; i++) { // in object["indf"].slice(1)) {
-			if(i > 0) str += ", ";
-			str += object["indf"][i];
-		}
-
-		if(str.length === 0) return "none";
-		return str;
-	}
-
-	grantAccess(addr, section, name) {
-		let that = this;
-		let profile = Profile.getProfileById(this.patientId).then((profile) => {
-			let web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io"));
-			let privateKey = new Buffer(profile.wallet.privKey, "hex");
-			let mphr = new web3.eth.Contract(JSON.parse(mphrAbi));
-			let data = mphr.methods.grantAccess(web3.utils.fromAscii(name).padEnd(66,'0'),addr,web3.utils.fromAscii(section).padEnd(66,'0'),0).encodeABI();
-
-			console.log("Using nonce:",that.nonce,"for tx");
-
-			let tx = new ethereumjs.Transaction({
-				nonce: that.nonce,
-				gasPrice: web3.utils.toHex(web3.utils.toWei("20","gwei")),
-				gasLimit: 500000,
-				to: profile.mphr,
-				value: 0,
-				data: data
-			}, {'chain':'rinkeby'});
-
-			tx.sign(privateKey);
-			var raw = '0x'+tx.serialize().toString("hex");
-
-			that.nonce++;
-
-			try {
-				web3.eth.sendSignedTransaction(raw, function(error,transactionHash) {
-					if("Error",error) {
-						console.log(error);
-					} else {
-						console.log("Revoke-Permission tx sent successfully:",transactionHash);
-					}
-				});
-			} catch(error) {
-				console.log(error);
-			}
-		});
-		sleep(100);
-	}
-
-	revokeAccess(addr, section, name) {
-		let that = this;
-		let profile = Profile.getProfileById(this.patientId).then((profile) => {
-			let web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io"));
-			let privateKey = new Buffer(profile.wallet.privKey, "hex");
-			let mphr = new web3.eth.Contract(JSON.parse(mphrAbi));
-			let data = mphr.methods.revokeAccess(web3.utils.fromAscii(name).padEnd(66,'0'),addr,web3.utils.fromAscii(section).padEnd(66,'0')).encodeABI();
-
-			console.log("Using nonce:",that.nonce,"for tx");
-
-			let tx = new ethereumjs.Transaction({
-				nonce: that.nonce,
-				gasPrice: web3.utils.toHex(web3.utils.toWei("20","gwei")),
-				gasLimit: 500000,
-				to: profile.mphr,
-				value: 0,
-				data: data
-			}, {'chain':'rinkeby'});
-
-			tx.sign(privateKey);
-			var raw = '0x'+tx.serialize().toString("hex");
-
-			that.nonce++;
-
-			web3.eth.sendSignedTransaction(raw, function(error,transactionHash) {
-				if("Error",error) {
-					console.log(error);
-				}
-				console.log("Revoke-Permission tx sent successfully:",transactionHash);
-			});
-		});
-	}
-
-	applyChanges(prevObj, newObj, addr, name) {
-		if(prevObj["all"] === false && newObj["all"] === true) {
-			//grantFullAccess
-			this.grantAccess(addr, "all", name);
-		} else if(prevObj["all"] === true && newObj["all"] === false) {
-			//revokeFulLAccess
-			this.revokeAccess(addr, "all", name);
-		}
-
-		let map = {};
-		for(let i = 0; i < prevObj["indf"].length; i++) {
-			map[prevObj["indf"][i]] = true;
-		}
-
-		for(let i = 0; i < newObj["indf"].length; i++) {
-			let el = newObj["indf"][i];
-			if(map[el] == true) {}
-			else if(map[el] !== true) {
-				//grantAccess for cat=el
-				this.grantAccess(addr, el, name);
-			}
-			map[el] = false;
-		}
-
-		for(let el in map) {
-			if(map[el] == true) {
-				//revokeAccess for cat=el
-				this.revokeAccess(addr, el, name);
-			}
-		}
-	}
-
-	static addrsStrToObject(str) {
-		let obj = {};
-		if(str === "") return obj;
-		let strSplit = str.split(".");
-		for(let i = 0; i < strSplit.length; i++) {
-			let el = strSplit[i];
-			let addr = el.split(":")[0];
-			let data = el.split(":")[1];
-			obj[addr] = Permissions.strToObject(data);
-		}
-		return obj;
-	}
-
-	static addrsObjectToStr(obj) {
-		let str = "";
-		let first = true;
-		for(let prop in obj) if(Object.prototype.hasOwnProperty.call(obj,prop)) {
-			if(!first) str += ".";
-			str += prop+":"+Permissions.objectToStr(obj[prop]);
-			first = false;
-		}
-		return str;
-	}
-
-	//so we can store it in the nedb database
-	toObject() {
-		let addrs = Permissions.addrsObjectToStr(this.addrs);
-		const obj = {
-			patientId: this.patientId,
-			pphrAddr: this.pphrAddr,
-			id: this.id,
-			addrs: addrs,
-			type: "permissions"
-		}
-		return obj;
 	}
 
 }

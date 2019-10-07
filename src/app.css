@@ -53,8 +53,20 @@ display: none;
 	margin-bottom: 1px;
 }
 
-.ant-layout-sider {
+.main-sider {
 	box-shadow: 0 2px 2px 1px rgba(0, 0, 0, 0.2);
+	left: 0;
+	overflow: hidden;
+	height: 100vh;
+	position: fixed;
+}
+
+.search-sider {
+	height: 92vh;
+	overflow: hidden;
+	border-right: 1px solid grey;
+	max-width: 300px;
+	flex: 0 0 300px;
 }
 
 .ant-tabs-ink-bar {
@@ -112,6 +124,89 @@ display: none;
 	color: white;
 }
 
+.ant-input:hover {
+	border-color: #FF0000;
+}
+
+.input.ant-input:hover {
+	border-color: #FF0000;
+}
+
+.search-addr {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.12),0 1px 2px rgba(0,0,0,0.20);
+	margin: 10px 10px 10px 10px;
+	padding: 5px;
+	border: 1px solid red;
+	border-radius: 2px;
+	background-color: white;
+	align-items: center;
+	text-align: center;
+	font-size: 15px;
+	cursor: pointer;
+}
+
+.search-params {
+	margin-left: 10px;
+	font-size: 32px;
+	margin-bottom: 10px;
+}
+
+.search-addr:hover {
+	background-color:#f0f0f0;
+}
+
+.request-trigger {
+	margin-left: 10px;
+	width: 180px;
+	height:30px;
+	background-color: #fc3f3f;
+	border: 1px solid #FF0000;
+}
+
+.ant-btn-primary:hover, .ant-btn-primary:focus {
+	background-color: #f0f0f0;
+	border-color: #FF0000;
+}
+
+.request-trigger:hover {
+	background-color: #FF0000;
+}
+
+.pphr-component {
+	border-radius: 5px;
+	box-shadow: 0 1px 5px rgba(0,0,0,0.12),0 1px 2px rgba(0,0,0,0.20);
+	margin-right: 10px;
+	margin-top: 15px;
+	border: 1px solid #bdbdbd;
+}
+
+.profile-card {
+	position: absolute;
+	bottom: 80px;
+	left: 15px;
+	border-radius: 2px;
+	cursor: pointer;
+	box-shadow: 1.5px 1.5px 6px 1px rgba(0,0,0,0.66);
+}
+
+.profile-card-image {
+	margin: 5px 8px 5px 5px;
+	border-radius: 75px;
+	max-width: 50px;
+	max-height: 50px;
+	border-color: white;
+}
+
+.profile-card-name {
+	margin-right: 8px;
+	color: #4a4a4a;
+}
+
+.ackno {
+	position: absolute;
+	right: 35px;
+}
+
 @font-face {
   font-family: 'Cormorant Garamond';
   src: url('images/CormorantGaramond-Regular.ttf') format("truetype");
@@ -135,6 +230,7 @@ display: none;
 .lds-ripple div:nth-child(2) {
   animation-delay: -0.5s;
 }
+
 @keyframes lds-ripple {
   0% {
     top: 28px;

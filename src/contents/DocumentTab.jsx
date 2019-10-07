@@ -86,11 +86,10 @@ export default class DocumentTab extends React.Component {
 	}
 
 	addData(data, gateway) {
-		let provider = "";
-		//manually identify providers
-		if(gateway == "0.0.0.0:5000") { provider = "Clínica Corachan"; }
-		else if(gateway == "0.0.0.0:5001") { provider = "Hospital el Pilar"; }
-		else if(gateway == "0.0.0.0:5002") { provider = "Centro Médico Teknon" }
+		let provider = "Clínica Corachan";
+		//manually identify providers, not good but f it
+		if(gateway == "0.0.0.0:5001")  provider = "Hospital el Pilar";
+		else if(gateway == "0.0.0.0:5002")  provider = "Centro Médico Teknon";
 		var that = this;
 
 		categories.forEach(function (category) {
@@ -149,7 +148,6 @@ export default class DocumentTab extends React.Component {
 			sig = this.props.profile.wallet.signData(message);
 			url = "http://"+gateway+"/patient/"+id+"&"+category+"&"+nonce+"&"+sig;
 			const data = await this.fetchUrl(url);
-			console.log("Adding data from gateway "+gateway);
 			this.addData(data, gateway);
 		} catch(exception) {
 			console.log("Exception ocurred:", exception);
@@ -196,9 +194,7 @@ export default class DocumentTab extends React.Component {
 			let sections = [];
 			for(var i = 0; i < categories.length; i++) {
 				if(this.state[categories[i]].length === 0) continue;
-				sections.push(
-					<RecordSection key={categories[i]} section={categories[i]} data={this.state[categories[i]]} individual={false} changeView={(newView) => this.setState({view:newView})} />
-				);
+				sections.push(<RecordSection key={categories[i]} section={categories[i]} data={this.state[categories[i]]} individual={false} changeView={(newView) => this.changeView(newView)} />);
 			}
 			return sections;
 		} else {
@@ -212,7 +208,6 @@ export default class DocumentTab extends React.Component {
 	}
 
 	render() {
-		console.log(this.state);
 		//not until we have data
 		if(this.state.personalData.hasOwnProperty("display") === false) {
 			return (<div style={{marginLeft:"210px"}}><div style={{marginLeft:"350px",marginTop:"250px"}} className="lds-ripple"><div></div><div></div></div></div>);
