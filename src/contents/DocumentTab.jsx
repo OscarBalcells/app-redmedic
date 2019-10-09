@@ -157,6 +157,7 @@ export default class DocumentTab extends React.Component {
 	//returns all the data from every single pphr
 	async getData() {
 		//first we have to find out all the gateways we have to query
+
 		/* no internet usage when this is disabled
 		var that = this;
 		let web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io"));
@@ -178,7 +179,14 @@ export default class DocumentTab extends React.Component {
 			}
 		});
 		*/
-		let gateways = ["localhost:5000","0.0.0.0:5001","0.0.0.0:5002"];
+
+		//this is very bad code because we are manually adding providers, but it just works
+		let gateways = [];
+		if(this.props.onlyProvider === "Corachan") gateways = ["0.0.0.0:5000"];
+		else if(this.props.onlyProvider === "Pilar") gateways = ["0.0.0.0:5001"];
+		else if(this.props.onlyProvider === "Teknon") gateways = ["0.0.0.0:5002"];
+		else gateways = ["0.0.0.0:5000","0.0.0.0:5001","0.0.0.0:5002"];
+
 		for(var i = 0; i < gateways.length; i++) {
 			this.request(gateways[i], this.props.profile.id, "all");
 		}
@@ -212,9 +220,19 @@ export default class DocumentTab extends React.Component {
 		if(this.state.personalData.hasOwnProperty("display") === false) {
 			return (<div style={{marginLeft:"210px"}}><div style={{marginLeft:"350px",marginTop:"250px"}} className="lds-ripple"><div></div><div></div></div></div>);
 		}
+		let changeView = "";
+		if(this.props.onlyProvider !== "") {
+			changeView = (
+				<div>
+					<div style={{width:"100%",marginTop:"5px",height:"5px"}}></div>
+					<Button type="danger" style={{width:"98%",marginLeft:"1%", height:"30px",border:"0.5px solid #F08080"}} onClick={() => this.props.changeView()}>Back</Button>
+				</div>
+			);
+		}
 		return (
 			<Layout style={{marginLeft:"210px"}}>
 				{this.returnContent()}
+				{changeView}
 			</Layout>
 		);
 	}

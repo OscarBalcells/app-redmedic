@@ -40,34 +40,36 @@ export default class NewProfileForm extends React.Component {
 				return (
 					<div>
 						<div>
-							<h2>Codigo Mnemonico</h2>
+							<h2>Mnemonic Code</h2>
 							<p>
-								Tu clave criptografica para verificar tu identidad en el Blockchain
-							  y mantener tus datos seguros se genera a partir de 12
-							 	palabras aleatorias que tienes que apuntar y guardar.
+								If you don't have an account in the RedMedic network yet, click the button to generate
+								12 random seed words, which will be used to derive your cryptographic private key and
+								verify your identity in the RedMedic network.
+								<b> Don't write these words yourself. </b>
+								In case you already own a valid crypto wallet in the form of a
+								hierarchichal deterministic key set by the standard of BIP-0032,
+								just write your 12 seed words down.
 							</p>
-							<p>
-								Si estas creando una identidad en el blockchain por primera vez,
-								pulsa el boton para generarlas de forma aleatoria y apuntalas.
-								<b> No las escribas tu mismo. </b>
-								En caso de que ya tengas una identidad y quieras importarla tan solo
-								tienes que escribir las 12 palabras que apuntaste previamente.
+							<p style={{color:"red"}}>
+								This cryptographic private key will be used to verify your identity in the RedMedic network.
+								If someone gains access to this key it may compromise the security and integrity of your data.
+								Please, write it down and store it in a safe place.
 							</p>
 
-							<Button type="primary" onClick={() => this.setState({mnemonic:Wallet.generateMnemonic()})}>Generar Palabras</Button>
+							<Button type="primary" onClick={() => this.setState({mnemonic:Wallet.generateMnemonic()})}>Generate Seed</Button>
 							<Input.TextArea
 								style={{marginTop:"5px",marginBottom:"10px"}}
 								value={this.state.mnemonic}
 								onChange={(e) => this.setState({mnemonic:e.target.value})}
 							/>
 						</div>
-						<Button type="danger" style={{float:"right"}} onClick={() => this.setState({phase:2})}>Aceptar</Button>
+						<Button type="danger" style={{float:"right"}} onClick={() => this.setState({phase:2})}>Accept</Button>
 					</div>
 				);
 		} else {
 			return(
 				<Form onSubmit={(e) => this.handleSubmit(e)}>
-					<Form.Item label="Nombre y Apellidos">
+					<Form.Item label="Name and Surname">
 							<Input
 								prefix={<Icon type="user" style={{color:"rgba(0,0,0,.25)"}} />}
 								placeholder="Oscar Balcells Obeso"
@@ -75,7 +77,7 @@ export default class NewProfileForm extends React.Component {
 								onChange={(e) => this.setState({nombre:e.target.value})}
 							/>
 					</Form.Item>
-					<Form.Item label="Fecha de nacimiento">
+					<Form.Item label="Date of Birth">
 						<Input
 								prefix={<Icon type="calendar" style={{color:"rgba(0,0,0,.25)"}} />}
 								placeholder="01/03/2002"
@@ -83,10 +85,10 @@ export default class NewProfileForm extends React.Component {
 								onChange={(e) => this.setState({fecha:e.target.value})}
 						/>
 					</Form.Item>
-					<Form.Item label="Sexo">
+					<Form.Item label="Sex">
 						<Radio.Group onChange={(e) => this.setState({sexo:e.target.value})} value={this.state.sexo}>
-							<Radio value={"Mujer"}>Mujer</Radio>
-							<Radio value={"Hombre"}>Hombre</Radio>
+							<Radio value={"Mujer"}>Female</Radio>
+							<Radio value={"Hombre"}>Male</Radio>
 						</Radio.Group>
 					</Form.Item>
 					<Form.Item label="ID Seguridad social">
@@ -97,7 +99,7 @@ export default class NewProfileForm extends React.Component {
 							onChange={(e) => this.setState({id:e.target.value})}
 						/>
 					</Form.Item>
-					<Button style={{float:"right"}} type="primary" htmlType="submit">Añadir</Button>
+					<Button style={{float:"right"}} type="primary" htmlType="submit">Add Account</Button>
 				</Form>
 			);
 		}

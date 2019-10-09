@@ -201,6 +201,9 @@ export default class SearchTab extends React.Component {
 							<Button className="request-trigger" type="primary" onClick={() => this.queryData()}>
 								Send Request
 							</Button>
+							<div style={{marginTop:"10px",fontSize:"10px"}}>
+								Queries are being signed using address {this.props.profile.wallet.addr}
+							</div>
 						</div>
 					</Sider>
 					<Layout>

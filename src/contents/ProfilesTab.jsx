@@ -63,10 +63,8 @@ export default class ProfilesTab extends React.Component {
 	}
 
 	render() {
-		var addButton = "";
 		return(
-			<Layout style={{marginLeft:"200px",height:"100vh"}}>
-				{addButton}
+			<Layout style={{marginLeft:"200px",height:"100vh",overflow:"hidden"}}>
 				<Tabs defaultActiveKey="2" style={{ padding: "16px", height:"100vh" }}>
 					{this.returnProfileTabs()}
 				</Tabs>

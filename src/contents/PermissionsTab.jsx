@@ -2,6 +2,7 @@ import React from "react";
 import { message, Tabs, Button, Icon, Layout, Form, Input, Modal, Radio } from 'antd';
 const { Header, Content, Footer } = Layout;
 
+import DocumentTab from "./DocumentTab.jsx";
 import PPHRComponent from "./PPHRComponent.jsx";
 
 const Web3 = require("web3");
@@ -23,7 +24,8 @@ export default class PermissionsTab extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			providers: []
+			providers: [],
+			view: "all",
 		}
 	}
 
@@ -43,20 +45,6 @@ export default class PermissionsTab extends React.Component {
 		let mphr = new web3.eth.Contract(JSON.parse(mphrAbi));
 		mphr.options.address = this.props.profile.mphr;
 
-		/* we should query for the providerNames in production
-		let providerNames = [];
-		mphr.methods.().call({}, function (error, result) {
-			if(error) {
-				throw (error);
-			}
-			for(var i = 0; i < result.length; i++) {
-				//let gateway = hex2a(result[i]).slice(1);
-				//that.request(gateway, that.props.profile.id, "all");
-				console.log(result);
-			}
-		});
-		*/
-
 		for(var i = 0; i < providerNames.length; i++) {
 			let pn = providerNames[i];
 			mphr.methods.getPPHR(web3.utils.fromAscii(pn)).call({}, function (error, result) {
@@ -71,9 +59,14 @@ export default class PermissionsTab extends React.Component {
 	}
 
 	returnPPHRs() {
-		return this.state.providers.map((provider) =>
-			<PPHRComponent key={provider["pphrAddr"]} addr={provider["pphrAddr"]} gateway={provider["pphrGateway"]} profile={this.props.profile} />
-		);
+		if(this.state.view !== "all") {
+			console.log("Here!");
+			return <DocumentTab profile={this.props.profile} onlyProvider={this.state.view} changeView={() => this.setState({view:"all"})} />
+		}
+		return this.state.providers.map((provider) => {
+			let providerName = (provider.pphrGateway === "0.0.0.0:5000" ? "Corachan" : (provider.pphrGateway === "0.0.0.0:5001" ? "Pilar" : "Teknon"));
+			return <PPHRComponent key={provider["pphrAddr"]} changeView={() => this.setState({view:providerName})} addr={provider["pphrAddr"]} providerName={providerName} profile={this.props.profile} />
+		});
 	}
 
 	render() {
@@ -82,7 +75,7 @@ export default class PermissionsTab extends React.Component {
 			return (<div style={{marginLeft:"210px"}}><div style={{marginLeft:"350px",marginTop:"250px"}} className="lds-ripple"><div></div><div></div></div></div>);
 		}
 		return (
-			<Layout style={{marginLeft:"210px"}}>
+			<Layout>
 				{this.returnPPHRs()}
 			</Layout>
 		);

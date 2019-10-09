@@ -89,10 +89,6 @@ display: none;
 	background-color: #FF0000;
 }
 
-.ant-btn-danger {
-	border-color: #F99595;
-}
-
 .redmedic {
 	color: #FF0000;
 	font-family: "Cormorant Garamond", sans;
@@ -163,11 +159,6 @@ display: none;
 	border: 1px solid #FF0000;
 }
 
-.ant-btn-primary:hover, .ant-btn-primary:focus {
-	background-color: #f0f0f0;
-	border-color: #FF0000;
-}
-
 .request-trigger:hover {
 	background-color: #FF0000;
 }
@@ -178,6 +169,31 @@ display: none;
 	margin-right: 10px;
 	margin-top: 15px;
 	border: 1px solid #bdbdbd;
+}
+
+.provider-name {
+	position: relative;
+	top: 7px;
+	margin-left: 15px;
+	font-size: 24px;
+	color: #36332f;
+}
+
+.add-button {
+	background-color: #33cc33;
+	border: 1px solid grey;
+	margin-top: 5px;
+	float: right;
+	margin-right: 10px;
+	margin-top: 9px;
+	opacity: 0.85;
+}
+
+.add-button:hover {
+	opacity: 1.0;
+	background-color: #33cc33;
+	border: 1px solid grey;
+	transition: 0.5s;
 }
 
 .profile-card {

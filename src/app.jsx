@@ -4,7 +4,6 @@ const {  Header, Sider } = Layout;
 
 import ProfilesTab from "./contents/ProfilesTab.jsx";
 import Profile from "./logic/Profile.js";
-import Logo from "./contents/Logo.jsx";
 import DocumentTab from "./contents/DocumentTab.jsx";
 import PermissionsTab from "./contents/PermissionsTab.jsx";
 import SearchTab from "./contents/SearchTab.jsx";
@@ -37,7 +36,7 @@ export default class App extends React.Component {
 
 		returnSelectedTab() {
 			if(this.state.selected === 1) {
-				return (<DocumentTab key={this.state.activeProfile.id} profile={this.state.activeProfile} />);
+				return (<DocumentTab key={this.state.activeProfile.id} onlyProvider={""} profile={this.state.activeProfile} />);
 			} else if(this.state.selected === 2) {
 				return (<PermissionsTab key={this.state.activeProfile.id} profile={this.state.activeProfile} />);
 			} else if(this.state.selected === 3) {
@@ -68,7 +67,7 @@ export default class App extends React.Component {
 										<div style={{marginTop:"5px"}}>
 											<Icon type="file-text"
 											style={{fontSize:"18px"}}/>
-											<span className="nav-text" style={{fontSize:"15px"}}>Documento</span>
+											<span className="nav-text" style={{fontSize:"15px"}}>Record</span>
 										</div>
 									</Menu.Item>
 									<Menu.Item key="2" id="menu-item2"
@@ -76,7 +75,7 @@ export default class App extends React.Component {
 										<div style={{marginTop:"5px"}}>
 											<Icon type="security-scan"
 											style={{fontSize:"18px"}}/>
-											<span className="nav-text" style={{fontSize:"15px"}}>Permisos</span>
+											<span className="nav-text" style={{fontSize:"15px"}}>Permissions</span>
 										</div>
 									</Menu.Item>
 									<Menu.Item key="3" id="menu-item3"
@@ -84,7 +83,7 @@ export default class App extends React.Component {
 										<div style={{marginTop:"5px"}}>
 											<Icon type="search"
 											style={{fontSize:"18px"}}/>
-											<span className="nav-text" style={{fontSize:"15px"}}>Busqueda</span>
+											<span className="nav-text" style={{fontSize:"15px"}}>Search</span>
 										</div>
 									</Menu.Item>
 									<Menu.Item key="4" id="menu-item4"
@@ -92,7 +91,7 @@ export default class App extends React.Component {
 										<div style={{marginTop:"5px"}}>
 											<Icon type="user"
 											style={{fontSize:"18px"}}/>
-											<span className="nav-text" style={{fontSize:"15px"}}>Perfiles</span>
+											<span className="nav-text" style={{fontSize:"15px"}}>Profiles</span>
 										</div>
 									</Menu.Item>
 								</Menu>

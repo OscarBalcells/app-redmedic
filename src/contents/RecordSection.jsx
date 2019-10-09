@@ -28,14 +28,12 @@ export default class RecordSection extends React.Component {
 			else sectionSingular = this.props.section.slice(0,-1);
 			if(this.props.individual === false) {
 				return this.props.data.map((resource) => {
-						console.log(resource);
 						return (<Panel key={resource.id} header={resource.summary+"  -  "+resource.date}>
 							<Resource key={resource.id} r={resource} section={sectionSingular}/>
 						</Panel>);
 				});
 			} else {
 				return this.props.data.map((resource) => {
-					console.log(resource);
 					return (<Resource key={resource.id} style={{marginTop:"5px"}} r={resource} section={sectionSingular}/>);
 				});
 			}
@@ -43,7 +41,7 @@ export default class RecordSection extends React.Component {
 
 		render() {
 			if(this.props.individual === true) {
-				let backButton = (this.props.noBack === true ? "" : <Button type="danger" style={{width:"98%",marginRight:"2%"}} onClick={() => this.props.changeView("all")}>Volver Al Inicio</Button>);
+				let backButton = (this.props.noBack === true ? "" : <Button type="danger" style={{width:"98%",marginRight:"2%"}} onClick={() => this.props.changeView("all")}>Back</Button>);
 				return (
 					<div style={{marginTop:"15px",marginLeft:"10px"}}>
 						{this.returnResources()}

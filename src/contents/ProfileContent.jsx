@@ -118,7 +118,7 @@ export default class ProfileContent extends React.Component {
 					<div style={{height:"120%"}}>
 						<Form onSubmit={(e) => this.fieldsUpdated(e)} style={{marginLeft:"10px"}}>
 							{foto}
-							<Form.Item label="Nombre y Apellidos" style={{marginTop:"3px",marginBottom:"3px"}}>
+							<Form.Item label="Name and Surname" style={{marginTop:"3px",marginBottom:"3px"}}>
 									<Input
 										style={{width:"300px"}}
 										prefix={<Icon type="user" style={{color:"rgba(0,0,0,.25)"}} />}
@@ -127,7 +127,7 @@ export default class ProfileContent extends React.Component {
 										onChange={(e) => this.changeField(e,"nombre")}
 									/>
 							</Form.Item>
-							<Form.Item label="Fecha de nacimiento" style={{marginTop:"3px",marginBottom:"3px"}}>
+							<Form.Item label="Date of Birth" style={{marginTop:"3px",marginBottom:"3px"}}>
 								<Input
 										style={{width:"120px"}}
 										prefix={<Icon type="calendar" style={{color:"rgba(0,0,0,.25)"}} />}
@@ -136,14 +136,14 @@ export default class ProfileContent extends React.Component {
 										onChange={(e) => this.changeField(e, "fecha")}
 								/>
 							</Form.Item>
-							<Form.Item label="Sexo" style={{marginTop:"3px",marginBottom:"3px"}}>
+							<Form.Item label="Sex" style={{marginTop:"3px",marginBottom:"3px"}}>
 								<Radio.Group onChange={(e) => this.changeField(e,"sexo")} value={this.state.fields.sexo}>
-									<Radio value={"Mujer"}>Mujer</Radio>
-									<Radio value={"Hombre"}>Hombre</Radio>
+									<Radio value={"Mujer"}>Female</Radio>
+									<Radio value={"Hombre"}>Male</Radio>
 								</Radio.Group>
 							</Form.Item>
 
-							<Form.Item label="ID Seguridad social" style={{marginTop:"3px",marginBottom:"3px"}}>
+							<Form.Item label="Healthcare ID" style={{marginTop:"3px",marginBottom:"3px"}}>
 								<Input
 									style={{width:"300px"}}
 									prefix={<Icon type="idcard" style={{color:"rgba(0,0,0,.25)"}} />}
@@ -152,7 +152,7 @@ export default class ProfileContent extends React.Component {
 									onChange={(e) => this.changeField(e,"id")}
 									/>
 							</Form.Item>
-							<Form.Item label="Dirección de tu historial médico maestro" style={{marginTop:"3px",marginBottom:"6px"}}>
+							<Form.Item label="Address of your Master Personal Health Record Contract" style={{marginTop:"3px",marginBottom:"6px"}}>
 								<Input
 									style={{width:"400px"}}
 									prefix={<Icon type="qrcode" style={{color:"rgba(0,0,0,.25)"}} />}
@@ -163,9 +163,9 @@ export default class ProfileContent extends React.Component {
 							</Form.Item>
 					</Form>
 					<span style={{position:"absolute",right:"10px",top:"92%"}}>
-						<Button style={{border:"1px solid #40a9ff"}} type="secondary" onClick={() => this.updateProfile()}>Actualizar datos</Button>
-						<Button style={{marginLeft:"4px"}} type="danger" onClick={() => this.props.activateProfile(this.props.id)}>Activar perfil</Button>
-						<Button style={{marginLeft:"4px",backgroundColor:"white",border:"1px solid #00B844",color:"#00B844"}} type="primary" onClick={() => this.props.newProfile()}>Nuevo perfil</Button>
+						<Button style={{border:"1px solid #40a9ff"}} type="secondary" onClick={() => this.updateProfile()}>Update Data</Button>
+						<Button style={{marginLeft:"4px"}} type="danger" onClick={() => this.props.activateProfile(this.props.id)}>Activate Profile</Button>
+						<Button style={{marginLeft:"4px",backgroundColor:"white",border:"1px solid #00B844",color:"#00B844"}} type="primary" onClick={() => this.props.newProfile()}>New Profile</Button>
 					</span>
 				</div>
 			);

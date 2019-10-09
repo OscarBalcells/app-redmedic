@@ -4,35 +4,6 @@ import Profile from "./Profile.js";
 const Web3 = require("web3");
 const ethereumjs = require("ethereumjs-tx");
 
-let validCats = ["all","allergies","conditions","immunizations",
-"labs","medications","procedures","images"];
-
-//this creates a class, which represents a certain permission
-//a permition is basically a mapping of addresses to specific access rights
-/*
-{
-	"id": "0x...",
-	"nonce": 0,
-	"name": "Corachan",
-	"profileId": "123456789",
-	"rights": {
-		"0x...": {
-			display: "researcher",
-			categories: "allergies, labs"
-		}
-	}
-	"rights": [
-	{
-		"display": "researcher at UB",
-		"categories": "all"
-	},
-	{
-		"display": "hospital X",
-		"categories": "labs, allergies"
-	}
-	]
-}
-*/
 
 function sleep(milliseconds) {
   var start = new Date().getTime();
@@ -52,134 +23,175 @@ export default class Permissions {
 		this.nonce = 0;
 		this.name = doc["name"];
 		this.profileId = doc["profileId"];
-		this.rights = Permissions.decode(doc["rights"]);
+		this.rights = this.decode(doc["rights"]);
+		this.validCats = ["all","allergies","conditions","immunizations",
+		"labs","medications","procedures","images"];
+		this.web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io"));
 	}
 
 	getAdded() {
 		let addrs = [];
-		for(let prop in this.rights) if(Object.prototype.hasOwnProperty.call(this.rights,prop)) {
-			addrs.push(prop);
+		for(var prop in this.rights) {
+			if(this.rights[prop].hasOwnProperty("display")) addrs.push(prop);
 		}
 		return addrs;
 	}
 
-	applyChanges(newStr, addr) {
+	newElement(addr, display, categories) {
+		this.rights[addr] = {
+			"display": display,
+			"categories": "",
+		}
+		this.applyChanges(categories, addr);
+	}
+
+	deleteElement(addr) {
+		this.applyChanges("", addr);
+		delete this.rights[addr].display;
+		delete this.rights[addr];
+		this.update();
+	}
+
+	applyChanges(newStr, addr, del) {
 		let prev = {};
 		let now = {};
 
-		for(let cat in this.rights[addr].categories.split(", ")) prev[cat] = true;
-		for(let cat in newStr.split(", ")) now[cat] = true;
-
-		for(let cat in validCats) {
-			if(prev[cat] !== now[cat]) {
-				if(prev[cat] === true && now[cat] !== true) revokeAccess(addr, cat);
-				else if(prev[cat] !== true && now[cat] === true) grantAccess(addr, cat);
-			}
+		let cats = this.rights[addr].categories.split(", ");
+		for(let i = 0; i < cats.length; i++) {
+			let cat = cats[i];
+			prev[cat] = true;
 		}
 
-		this.rights[addr] = newStr;
+		cats = newStr.split(", ");
+		for(let i = 0; i < cats.length; i++) {
+			let cat = cats[i];
+			now[cat] = true;
+		}
+
+
+		Profile.getProfileById(this.profileId).then(profile => {
+			this.web3.eth.getTransactionCount(profile.wallet.addr).then(_nonce => {
+				let nonce = _nonce;
+				for(let i = 0; i < this.validCats.length; i++) {
+					let cat = this.validCats[i];
+					if(prev[cat] !== now[cat]) {
+						if(prev[cat] === true && now[cat] !== true) this.revokeAccess(addr, cat, nonce, profile);
+						else if(prev[cat] !== true && now[cat] === true) this.grantAccess(addr, cat, nonce, profile);
+						nonce++;
+					}
+				}
+
+				try {
+					let display = this.rights[addr].display;
+					this.rights[addr] = {
+						"categories":newStr,
+						"display": display,
+					};
+					this.update();
+				} catch(err) {
+					//it has been deleted at deleteElement
+				}
+			});
+		});
 	}
 
 	//to which address, what sections and the name of the pphr
-	grantAccess(addr, section) {
-		let that = this;
-		let profile = Profile.getProfileById(this.profileId).then((profile) => {
-			let web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io"));
-			let privateKey = new Buffer(profile.wallet.privKey, "hex");
-			let mphr = new web3.eth.Contract(JSON.parse(mphrAbi));
-			let data = mphr.methods.grantAccess(web3.utils.fromAscii(that.name).padEnd(66,'0'),addr,web3.utils.fromAscii(section).padEnd(66,'0'),0).encodeABI();
+	grantAccess(addr, section, nonce, profile) {
+		let privateKey = new Buffer(profile.wallet.privKey, "hex");
+		let mphr = new this.web3.eth.Contract(JSON.parse(mphrAbi));
+		let data = mphr.methods.grantAccess(this.web3.utils.fromAscii(this.name).padEnd(66,'0'),addr,this.web3.utils.fromAscii(section).padEnd(66,'0'),0).encodeABI();
 
-			let tx = new ethereumjs.Transaction({
-				nonce: that.nonce,
-				gasPrice: web3.utils.toHex(web3.utils.toWei("20","gwei")),
-				gasLimit: 500000,
-				to: profile.mphr,
-				value: 0,
-				data: data
-			}, {'chain':'rinkeby'});
+		let tx = new ethereumjs.Transaction({
+			nonce: nonce,
+			gasPrice: this.web3.utils.toHex(this.web3.utils.toWei("20","gwei")),
+			gasLimit: 500000,
+			to: profile.mphr,
+			value: 0,
+			data: data
+		}, {'chain':'rinkeby'});
 
-			tx.sign(privateKey);
-			var raw = '0x'+tx.serialize().toString("hex");
-			that.nonce++; //very important!
+		tx.sign(privateKey);
+		var raw = '0x'+tx.serialize().toString("hex");
 
-			try {
-				web3.eth.sendSignedTransaction(raw, function(error,transactionHash) {
-					if("Error",error) {
-						console.log(error);
-					} else {
-						console.log("Revoke-Permission tx sent successfully:",transactionHash);
-					}
-				});
-			} catch(error) {
-				console.log(error);
-			}
-		});
-		sleep(100);
+		try {
+			this.web3.eth.sendSignedTransaction(raw, function(error,transactionHash) {
+				if("Error",error) {
+					console.log(error);
+				} else {
+					console.log("Grant-Permission tx sent successfully:",transactionHash);
+				}
+			});
+		} catch(error) {
+			console.log(error);
+		}
 	}
 
-	revokeAccess(addr, section) {
-		let that = this;
-		let profile = Profile.getProfileById(this.patientId).then((profile) => {
-			let web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io"));
-			let privateKey = new Buffer(profile.wallet.privKey, "hex");
-			let mphr = new web3.eth.Contract(JSON.parse(mphrAbi));
-			let data = mphr.methods.revokeAccess(web3.utils.fromAscii(that.name).padEnd(66,'0'),addr,web3.utils.fromAscii(section).padEnd(66,'0')).encodeABI();
+	revokeAccess(addr, section, nonce, profile) {
+		let privateKey = new Buffer(profile.wallet.privKey, "hex");
+		let mphr = new this.web3.eth.Contract(JSON.parse(mphrAbi));
+		let data = mphr.methods.revokeAccess(this.web3.utils.fromAscii(this.name).padEnd(66,'0'),addr,this.web3.utils.fromAscii(section).padEnd(66,'0')).encodeABI();
 
-			let tx = new ethereumjs.Transaction({
-				nonce: that.nonce,
-				gasPrice: web3.utils.toHex(web3.utils.toWei("20","gwei")),
-				gasLimit: 500000,
-				to: profile.mphr,
-				value: 0,
-				data: data
-			}, {'chain':'rinkeby'});
+		console.log("Nonce:",profile.nonce);
 
-			tx.sign(privateKey);
-			var raw = '0x'+tx.serialize().toString("hex");
+		let tx = new ethereumjs.Transaction({
+			nonce: nonce,
+			gasPrice: this.web3.utils.toHex(this.web3.utils.toWei("20","gwei")),
+			gasLimit: 500000,
+			to: profile.mphr,
+			value: 0,
+			data: data
+		}, {'chain':'rinkeby'});
 
-			that.nonce++; //very important!
+		tx.sign(privateKey);
+		var raw = '0x'+tx.serialize().toString("hex");
 
-			web3.eth.sendSignedTransaction(raw, function(error,transactionHash) {
+		try {
+			this.web3.eth.sendSignedTransaction(raw, function(error,transactionHash) {
 				if("Error",error) {
 					console.log(error);
 				}
 				console.log("Revoke-Permission tx sent successfully:",transactionHash);
 			});
-		});
+		} catch(error) {
+			console.log(error);
+		}
 	}
 
-	static encode(array) {
+	encode() {
 		let str = "";
-		for(let i = 0; i < array.length; i++) {
+		let addrs = this.getAdded();
+		for(let i = 0; i < addrs.length; i++) {
+			let addr = addrs[i];
 			if(i > 0) str += "...";
-			let el = array[i];
-			let tstr = "";
-			tstr += el["display"];
-			tstr += ",,,";
-			tstr += el["categories"];
-			str += tstr;
+			str += addr;
+			str += ",,,";
+			str += this.rights[addr].display;
+			str += ",,,";
+			str += this.rights[addr].categories;
 		}
 		return str;
 	}
 
-	static decode(str) {
-		let array = [];
+	decode(str) {
+		if(str === "") return [];
+		let array = {};
 		let els = str.split("...");
 		for(let i = 0; i < els.length; i++) {
-			let el = els[i];
-			let display = el.split(",,,")[0];
-			let categories = el.split("...")[1];
+			let el = els[i].split(",,,");
+			let addr = el[0];
+			let display = el[1];
+			let categories = el[2];
 			let obj = {
 				"display": display,
 				"categories": categories
 			}
-			array.push(obj);
+			array[addr] = obj;
 		}
 		return array;
 	}
 
 	toObject() {
-		let rightsStr = Permissions.encode(this.rights);
+		let rightsStr = this.encode();
 		const obj = {
 			id: this.id,
 			name: this.name,
@@ -219,7 +231,11 @@ export default class Permissions {
 	}
 
 	erase() {
-		Permissions.store.remove({id:this.id});
+		try {
+			Permissions.store.remove({id:this.id});
+		} catch(error) {
+			console.log(error);
+		}
 	}
 
 	update() {
