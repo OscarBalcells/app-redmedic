@@ -64,7 +64,7 @@ export default class ProfilesTab extends React.Component {
 
 	render() {
 		return(
-			<Layout style={{marginLeft:"200px",height:"100vh",overflow:"hidden"}}>
+			<Layout style={{marginLeft:"200px",height:"100vh"}}>
 				<Tabs defaultActiveKey="2" style={{ padding: "16px", height:"100vh" }}>
 					{this.returnProfileTabs()}
 				</Tabs>

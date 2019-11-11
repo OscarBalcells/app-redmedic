@@ -29,8 +29,6 @@ export default class Wallet {
 		const publicKey = ethUtil.ecrecover(msgHash, sig.v, sig.r, sig.s);
 		const bufferAddr = ethUtil.publicToAddress(publicKey);
 		const addr = ethUtil.bufferToHex(bufferAddr);
-
-
 		const sigHex = "0x"+sig.r.toString("hex")+sig.s.toString("hex")+sig.v.toString(16);
 
 		if(this.addr.toLowerCase() === addr.toLowerCase()) {

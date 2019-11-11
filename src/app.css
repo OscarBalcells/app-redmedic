@@ -65,8 +65,7 @@ display: none;
 	height: 92vh;
 	overflow: hidden;
 	border-right: 1px solid grey;
-	max-width: 300px;
-	flex: 0 0 300px;
+	min-width: 300px;
 }
 
 .ant-tabs-ink-bar {
@@ -202,7 +201,16 @@ display: none;
 	left: 15px;
 	border-radius: 2px;
 	cursor: pointer;
-	box-shadow: 1.5px 1.5px 6px 1px rgba(0,0,0,0.66);
+	opacity: 0.8;
+	border-radius: 4.5px;
+	box-shadow: 2px 2px 2px rgba(150, 150, 150, 0.8);
+	border: 2px solid rgba(180, 180, 180, 1.0);
+}
+
+.profile-card:hover {
+	opacity: 1.0;
+	box-shadow: 4px 15px 20px rgba(10, 10, 10, 0.4);
+	transition: 1s;
 }
 
 .profile-card-image {

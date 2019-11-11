@@ -14,14 +14,13 @@ const createWindow = async () => {
 
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        width: 1000,
-        height: 750,
-				resizable: false,
+				resizable: true,
 				icon: __dirname+"/images/logo.png",
     });
 
     // and load the index.html of the app.
     mainWindow.loadURL(`file://${__dirname}/index.html`);
+		mainWindow.maximize();
 
     // Open the DevTools.
     if (isDevMode) {

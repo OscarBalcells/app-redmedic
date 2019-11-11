@@ -48,9 +48,8 @@ export default class ProfileContent extends React.Component {
 		componentDidMount() {
 			const profile = Profile.getProfileById(this.props.id).then((profile) => {
 				var fields = profile.toObject();
-				if(fields["foto"] === null) {
-					fields["foto"] = "";
-				}
+				if(fields["foto"] === null) fields["foto"] = "";
+				fields["addr"] = profile.wallet.addr;
 				this.setState({fields:fields});
 				this.profile = profile;
 			});
@@ -114,6 +113,8 @@ export default class ProfileContent extends React.Component {
 				</Upload>
 			);
 
+			console.log(this.state.fields.foto);
+
 			return(
 					<div style={{height:"120%"}}>
 						<Form onSubmit={(e) => this.fieldsUpdated(e)} style={{marginLeft:"10px"}}>
@@ -150,6 +151,13 @@ export default class ProfileContent extends React.Component {
 									placeholder={"123456789"}
 									value={this.state.fields.id}
 									onChange={(e) => this.changeField(e,"id")}
+									/>
+							</Form.Item>
+							<Form.Item label="Address of your Ethereum account" style={{marginTop:"3px",marginBottom:"6px"}}>
+								<Input
+									style={{width:"400px"}}
+									prefix={<Icon type="qrcode" style={{color:"rgba(0,0,0,.25)"}} />}
+									value={this.state.fields.addr}
 									/>
 							</Form.Item>
 							<Form.Item label="Address of your Master Personal Health Record Contract" style={{marginTop:"3px",marginBottom:"6px"}}>

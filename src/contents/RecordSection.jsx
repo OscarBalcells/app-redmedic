@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Collapse } from 'antd';
+import { Button, Collapse, Icon } from 'antd';
 const { Panel } = Collapse;
 
 import Resource from "./Resource.jsx";
@@ -26,26 +26,33 @@ export default class RecordSection extends React.Component {
 			if(this.props.section === "allergies") sectionSingular = "Allergy";
 			else if(this.props.section === "personalData") sectionSingular = "Personal Data Segment";
 			else sectionSingular = this.props.section.slice(0,-1);
+
 			if(this.props.individual === false) {
+				let ind = -1;
 				return this.props.data.map((resource) => {
-						return (<Panel key={resource.id} header={resource.summary+"  -  "+resource.date}>
-							<Resource key={resource.id} r={resource} section={sectionSingular}/>
+						ind += 1;
+						return (
+						<Panel key={resource.id} header={resource.summary+"  -  "+resource.date}>
+							<Resource key={resource.id} r={resource} section={sectionSingular} changeView={() => this.props.changeView("image:"+ind.toString())}/>
 						</Panel>);
 				});
 			} else {
+				let ind = -1;
 				return this.props.data.map((resource) => {
-					return (<Resource key={resource.id} style={{marginTop:"5px"}} r={resource} section={sectionSingular}/>);
+					ind += 1;
+					return (<Resource key={resource.id} style={{marginTop:"5px"}} r={resource} changeView={() => this.props.changeView("image:"+ind.toString())} section={sectionSingular}/>);
 				});
 			}
 		}
 
 		render() {
 			if(this.props.individual === true) {
-				let backButton = (this.props.noBack === true ? "" : <Button type="danger" style={{width:"98%",marginRight:"2%"}} onClick={() => this.props.changeView("all")}>Back</Button>);
+				let backButton = <Button type="danger" style={{marginBottom:"5px"}} onClick={() => this.props.changeView("all")}>Back <Icon type="rollback" /></Button>
+				//let backButton = (this.props.noBack === true ? "" : <Button type="danger" style={{width:"98%",marginRight:"2%"}} onClick={() => this.props.changeView("all")}>Back</Button>);
 				return (
 					<div style={{marginTop:"15px",marginLeft:"10px"}}>
-						{this.returnResources()}
 						{backButton}
+						{this.returnResources()}
 					</div>
 				);
 			}

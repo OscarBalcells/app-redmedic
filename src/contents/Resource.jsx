@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "antd";
 
 function cleanString(string) {
 	let newString = "";
@@ -39,7 +40,7 @@ export default class Resource extends React.Component {
 
 	returnFields() {
 		let fields = [];
-		for(var prop in this.props.r) {
+		for(var prop in this.props.r) if(!(this.props.section === "image" && prop === "data")) {
 			if(prop !== "summary" && (prop !== "date" || this.props.r.resourceType === "Immunization") && Object.prototype.hasOwnProperty.call(this.props.r, prop)) {
 				let string = JSON.stringify(this.props.r[prop]);
 				let cleanedString = cleanString(string);
@@ -55,11 +56,15 @@ export default class Resource extends React.Component {
 	}
 
 	render() {
-		console.log(this.props.r);
+		let btn;
+		if(this.props.section === "image") {
+			btn = <Button style={{marginTop:"5px"}} onClick={() => this.props.changeView()} type="primary">Click to see image</Button>;
+		}
 		return (
 			<div style={{marginBottom:"10px"}}>
 				<h1 style={{textDecoration:"underline",fontSize:"20px",color:"#1E82DA"}}>{this.props.r.summary.split(" -  ")[0]+"  -  "+this.props.section}</h1>
 				{this.returnFields()}
+				{btn}
 			</div>
 		);
 	}

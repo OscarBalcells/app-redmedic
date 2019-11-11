@@ -72,7 +72,7 @@ export default class PermissionsTab extends React.Component {
 	render() {
 		//a container is this horizontal div showing the permissions for a particular pphr
 		if(this.state.providers.length === 0) {
-			return (<div style={{marginLeft:"210px"}}><div style={{marginLeft:"350px",marginTop:"250px"}} className="lds-ripple"><div></div><div></div></div></div>);
+			return (<div style={{marginLeft:"50vw",marginTop:"250px"}} className="lds-ripple"><div></div><div></div></div>);
 		}
 		return (
 			<Layout>

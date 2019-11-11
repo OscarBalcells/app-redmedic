@@ -83,7 +83,7 @@ export default class SearchTab extends React.Component {
 				}
 			}
 			let sig = this.props.profile.wallet.signData("nonce");
-			let url = "http://"+this.state.ip+":"+this.state.port+"/nonce/"+this.state.id+"&"+sig;
+			let url = "http://"+this.state.ip+":"+this.state.port+"/nonce/"+sig;
 			const nonce = await this.fetchStuff(url);
 
 			const message = this.state.id + "," + this.state.category + "," + nonce.toString();
@@ -155,7 +155,7 @@ export default class SearchTab extends React.Component {
 	render() {
 		//<div className="search-addr">Signing queries as address <b>{this.props.profile.wallet.addr}</b></div>
 		return (
-			<Layout style={{marginLeft:"205px",backgroundColor:"white",position:"fixed"}}>
+			<Layout style={{marginLeft:"205px",backgroundColor:"white"}}>
 				<Layout style={{backgroundColor:"white",position:"fixed"}}>
 					<Sider className="search-sider">
 						<div className="search-params"><b>Search Parameters</b></div>
@@ -201,7 +201,7 @@ export default class SearchTab extends React.Component {
 							<Button className="request-trigger" type="primary" onClick={() => this.queryData()}>
 								Send Request
 							</Button>
-							<div style={{marginTop:"10px",fontSize:"10px"}}>
+							<div style={{marginTop:"10px",fontSize:"10px",marginLeft:""}}>
 								Queries are being signed using address {this.props.profile.wallet.addr}
 							</div>
 						</div>

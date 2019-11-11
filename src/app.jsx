@@ -95,7 +95,7 @@ export default class App extends React.Component {
 										</div>
 									</Menu.Item>
 								</Menu>
-								<div className="profile-card">
+								<div className="profile-card" onClick={() => this.setState({selected:4})}>
 									<img className="profile-card-image" src={this.state.activeProfile.foto} />
 									<span className="profile-card-name"><b>{this.state.activeProfile.nombre}</b></span>
 								</div>

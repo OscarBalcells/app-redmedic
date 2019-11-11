@@ -184,7 +184,7 @@ export default class PPHRComponent extends React.Component {
 
 	render() {
 		return (
-			<div className="pphr-component" style={{marginLeft:"210px"}}>
+			<div className="pphr-component" style={{marginLeft:"210px",backgroundColor:"white"}}>
 				<span className="provider-name"><a onClick={() => this.props.changeView()}>{this.props.providerName}</a></span>
 				<Button className="add-button" type="primary" shape="circle" onClick={() => this.setState({visible:true})}><Icon type="plus" /></Button>
 				<div style={{marginLeft:"10px",marginTop:"5px",marginRight:"10px",marginBottom:"8px"}}>{this.renderData()}</div>

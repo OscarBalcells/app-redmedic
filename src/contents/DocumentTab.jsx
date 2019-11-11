@@ -5,6 +5,7 @@ const { Header, Content, Footer } = Layout;
 import Wallet from "../logic/Wallet.js";
 import Profile from "../logic/Profile.js";
 import RecordSection from "./RecordSection.jsx";
+import ImageResource from "./ImageResource.jsx";
 
 const Web3 = require("web3");
 
@@ -59,7 +60,7 @@ function getSummary(resource) {
 	else if(type === "Observation") return resource.code.text+"  -  "+resource.valueQuantity.value+" "+resource.valueQuantity.unit;
 	else if(type === "MedicationOrder") return resource.medicationReference;
 	else if(type === "Procedure") return resource.code.text+"  -  "+resource.status;
-	else if(type === "Images") return resource.notes;
+	else if(type === "Image") return resource.notes;
 }
 
 const mphrAbi = '[{"constant":false,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"}],"name":"deletePPHR","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"}],"name":"getPPHR","outputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"},{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"acta","outputs":[{"internalType":"contract Acta","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"gateways","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"actaAddr","outputs":[{"internalType":"address payable","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"id","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"},{"internalType":"address","name":"addr","type":"address"},{"internalType":"bytes32","name":"section","type":"bytes32"}],"name":"revokeAccess","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"pphrAddr","type":"address"}],"name":"newPPHR","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"returnGateways","outputs":[{"internalType":"bytes32[]","name":"","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"},{"internalType":"address","name":"addr","type":"address"},{"internalType":"bytes32","name":"section","type":"bytes32"},{"internalType":"uint256","name":"nHours","type":"uint256"}],"name":"grantAccess","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_id","type":"bytes32"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]';
@@ -70,6 +71,7 @@ export default class DocumentTab extends React.Component {
 		super(props);
 		this.state = {
 			view: "all",
+			prevView: "all",
 			personalData: {},
 			labs: [],
 			medications: [],
@@ -86,8 +88,8 @@ export default class DocumentTab extends React.Component {
 	}
 
 	addData(data, gateway) {
+		//manually identify providers, not good but it's just alpha version
 		let provider = "Clínica Corachan";
-		//manually identify providers, not good but f it
 		if(gateway == "0.0.0.0:5001")  provider = "Hospital el Pilar";
 		else if(gateway == "0.0.0.0:5002")  provider = "Centro Médico Teknon";
 		var that = this;
@@ -111,7 +113,6 @@ export default class DocumentTab extends React.Component {
 		if(this.state.personalData.hasOwnProperty("display") === false) {
 			this.setState({personalData:data["personalData"]});
 		}
-
 		console.log("Data successfully fetched from gateway "+ gateway);
 	}
 
@@ -137,11 +138,10 @@ export default class DocumentTab extends React.Component {
 		});
 	}
 
-  //returns 0 if everything ok, else returns 1
 	async request(gateway, id, category) {
 		try {
 			let sig = this.props.profile.wallet.signData("nonce");
-			let url = "http://"+gateway+"/nonce/"+id+"&"+sig;
+			let url = "http://"+gateway+"/nonce/"+sig;
 			const nonce = await this.fetchUrl(url);
 
 			const message = id + "," + category + "," + nonce.toString();
@@ -157,14 +157,8 @@ export default class DocumentTab extends React.Component {
 	//returns all the data from every single pphr
 	async getData() {
 		//first we have to find out all the gateways we have to query
-
-		/* no internet usage when this is disabled
 		var that = this;
 		let web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io"));
-		//if(web3.eth.getCode(this.props.profile.mphr) == '0x0' || web3.eth.getCode(this.props.profile.mphr) == '0x') {
-			//console.log("Nothing at address");
-			//return;
-		//}
 		let mphr = new web3.eth.Contract(JSON.parse(mphrAbi));
 		mphr.options.address = this.props.profile.mphr;
 
@@ -178,8 +172,10 @@ export default class DocumentTab extends React.Component {
 				that.request(gateway, that.props.profile.id, "all");
 			}
 		});
-		*/
 
+
+		/*
+		//manual way if you already know the providers you query
 		//this is very bad code because we are manually adding providers, but it just works
 		let gateways = [];
 		if(this.props.onlyProvider === "Corachan") gateways = ["0.0.0.0:5000"];
@@ -190,10 +186,11 @@ export default class DocumentTab extends React.Component {
 		for(var i = 0; i < gateways.length; i++) {
 			this.request(gateways[i], this.props.profile.id, "all");
 		}
+		*/
 	}
 
 	changeView(newView) {
-		this.setState({view:newView});
+		this.setState({prevView:this.state.view,view:newView});
 		window.scrollTo(0,0);
 	}
 
@@ -205,6 +202,10 @@ export default class DocumentTab extends React.Component {
 				sections.push(<RecordSection key={categories[i]} section={categories[i]} data={this.state[categories[i]]} individual={false} changeView={(newView) => this.changeView(newView)} />);
 			}
 			return sections;
+		} else if(this.state.view.split(":")[0] === "image") {
+			let ind = this.state.view.split(":")[1];
+			let content = this.state.images[ind];
+			return (<ImageResource content={content} prev={this.state.prevView} changeView={() => this.changeView(this.state.prevView)}/>);
 		} else {
 			let cat = this.state.view;
 			if(categories.indexOf(cat) !== -1) {
@@ -218,7 +219,7 @@ export default class DocumentTab extends React.Component {
 	render() {
 		//not until we have data
 		if(this.state.personalData.hasOwnProperty("display") === false) {
-			return (<div style={{marginLeft:"210px"}}><div style={{marginLeft:"350px",marginTop:"250px"}} className="lds-ripple"><div></div><div></div></div></div>);
+			return (<div style={{marginLeft:"50vw",marginTop:"250px"}} className="lds-ripple"><div></div><div></div></div>);
 		}
 		let changeView = "";
 		if(this.props.onlyProvider !== "") {
