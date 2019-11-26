@@ -1,7 +1,0 @@
-{
-	"presets": [
-        "@babel/preset-react",
-        "react-native",
-        "babel-preset-stage-3"
-    ]
-}
