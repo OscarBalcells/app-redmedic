@@ -1,13 +1,9 @@
 import React from "react";
-import { Tabs, Button, Icon, Layout, Form, Input, Modal, Radio } from 'antd';
-const { Header, Content, Footer } = Layout;
-
-import Wallet from "../logic/Wallet.js";
+import { Tabs, Layout, Modal } from 'antd';
+const { Footer } = Layout;
 import Profile from "../logic/Profile.js";
-
 import ProfileContent from "./ProfileContent.jsx";
 import NewProfileForm from "./NewProfileForm.jsx";
-
 var SimpleCrypto = require("simple-crypto-js").default;
 var simpleCrypto = new SimpleCrypto("redmedic");
 
@@ -64,7 +60,7 @@ export default class ProfilesTab extends React.Component {
 
 	render() {
 		return(
-			<Layout style={{marginLeft:"200px",height:"100vh"}}>
+			<Layout style={{height:"100vh"}}>
 				<Tabs defaultActiveKey="2" style={{ padding: "16px", height:"100vh" }}>
 					{this.returnProfileTabs()}
 				</Tabs>

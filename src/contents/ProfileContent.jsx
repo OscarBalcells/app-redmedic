@@ -113,8 +113,6 @@ export default class ProfileContent extends React.Component {
 				</Upload>
 			);
 
-			console.log(this.state.fields.foto);
-
 			return(
 					<div style={{height:"120%"}}>
 						<Form onSubmit={(e) => this.fieldsUpdated(e)} style={{marginLeft:"10px"}}>

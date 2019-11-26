@@ -2,7 +2,6 @@ import Datastore from 'nedb';
 
 
 export default class Database {
-
     constructor(name) {
         this.db = new Datastore({ filename: `./db/${name}.db`, autoload: true });
     }

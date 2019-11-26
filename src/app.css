@@ -62,10 +62,11 @@ display: none;
 }
 
 .search-sider {
-	height: 92vh;
+	width: 350px;
+	background-color:"white";
 	overflow: hidden;
-	border-right: 1px solid grey;
-	min-width: 300px;
+	float: left;
+	margin-right: 15px;
 }
 
 .ant-tabs-ink-bar {
@@ -168,6 +169,10 @@ display: none;
 	margin-right: 10px;
 	margin-top: 15px;
 	border: 1px solid #bdbdbd;
+}
+
+.hover-card:hover {
+	box-shadow: 5px 8px 10px -1px rgba(100,100,100,0.4);
 }
 
 .provider-name {

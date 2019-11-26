@@ -1,0 +1,273 @@
+::-webkit-scrollbar {
+display: none;
+}
+
+.App-title {
+    font-size: 2em;
+}
+
+.App-intro {
+    font-size: large;
+}
+
+.Header > h3 {
+    color: white;
+}
+
+*:focus {
+    outline: none;
+}
+
+.ant-layout {
+	height: 90vh;
+}
+
+.ant-layout-sider {
+	background-color: white;
+}
+
+.ant-menu-dark {
+	background-color: white;
+}
+
+.ant-menu-dark.ant-menu-dark .ant-menu-item {
+	background-color: white;
+	color: #FF0000;
+}
+
+.ant-menu-dark.ant-menu-dark .ant-menu-item-active {
+	background-color: #ffcccc;
+	color: #FF0000;
+}
+
+.ant-menu.ant-menu-dark .ant-menu-item-selected {
+	background-color: #FF0000;
+	color: white;
+}
+
+.ant-layout-header {
+	background-color: white;
+	padding-left: 30px;
+	width: 100%;
+	box-shadow: 0 5px 5px rgba(0,0,0,0.12),0 1px 2px rgba(0,0,0,0.20);
+	margin-bottom: 1px;
+}
+
+.main-sider {
+	box-shadow: 0 2px 2px 1px rgba(0, 0, 0, 0.2);
+	left: 0;
+	overflow: hidden;
+	height: 100vh;
+	position: fixed;
+}
+
+.search-sider {
+	height: 92vh;
+	overflow: hidden;
+	border-right: 1px solid grey;
+	min-width: 300px;
+}
+
+.ant-tabs-ink-bar {
+	background-color: #FF0000;
+}
+
+.ant-tabs-nav .ant-tabs-tab-active {
+	color: #FF0000;
+}
+
+.ant-radio-checked .ant-radio-inner {
+	border-color: #FF0000;
+}
+
+.ant-tabs {
+	color: #FF0000;
+}
+
+.ant-radio-inner::after {
+	background-color: #FF0000;
+}
+
+.redmedic {
+	color: #FF0000;
+	font-family: "Cormorant Garamond", sans;
+	font-size: 35px;
+	cursor: default;
+}
+
+.section-header {
+	margin-bottom: 0px;
+	border-top-left-radius: 30px 20px;
+	border-top-right-radius: 30px 20px;
+	margin-right: 10px;
+	cursor: pointer;
+	opacity: 0.8;
+}
+
+.section-header:hover {
+	opacity: 1.0;
+}
+
+.section-header > img {
+	margin-left:15px;
+	margin-bottom:10px;
+	margin-right:15px;
+}
+
+.section-header > b {
+	font-size: 30px;
+	color: white;
+}
+
+.ant-input:hover {
+	border-color: #FF0000;
+}
+
+.input.ant-input:hover {
+	border-color: #FF0000;
+}
+
+.search-addr {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.12),0 1px 2px rgba(0,0,0,0.20);
+	margin: 10px 10px 10px 10px;
+	padding: 5px;
+	border: 1px solid red;
+	border-radius: 2px;
+	background-color: white;
+	align-items: center;
+	text-align: center;
+	font-size: 15px;
+	cursor: pointer;
+}
+
+.search-params {
+	margin-left: 10px;
+	font-size: 32px;
+	margin-bottom: 10px;
+}
+
+.search-addr:hover {
+	background-color:#f0f0f0;
+}
+
+.request-trigger {
+	margin-left: 10px;
+	width: 180px;
+	height:30px;
+	background-color: #fc3f3f;
+	border: 1px solid #FF0000;
+}
+
+.request-trigger:hover {
+	background-color: #FF0000;
+}
+
+.pphr-component {
+	border-radius: 5px;
+	box-shadow: 0 1px 5px rgba(0,0,0,0.12),0 1px 2px rgba(0,0,0,0.20);
+	margin-right: 10px;
+	margin-top: 15px;
+	border: 1px solid #bdbdbd;
+}
+
+.provider-name {
+	position: relative;
+	top: 7px;
+	margin-left: 15px;
+	font-size: 24px;
+	color: #36332f;
+}
+
+.add-button {
+	background-color: #33cc33;
+	border: 1px solid grey;
+	margin-top: 5px;
+	float: right;
+	margin-right: 10px;
+	margin-top: 9px;
+	opacity: 0.85;
+}
+
+.add-button:hover {
+	opacity: 1.0;
+	background-color: #33cc33;
+	border: 1px solid grey;
+	transition: 0.5s;
+}
+
+.profile-card {
+	position: absolute;
+	bottom: 80px;
+	left: 15px;
+	border-radius: 2px;
+	cursor: pointer;
+	opacity: 0.8;
+	border-radius: 4.5px;
+	box-shadow: 2px 2px 2px rgba(150, 150, 150, 0.8);
+	border: 2px solid rgba(180, 180, 180, 1.0);
+}
+
+.profile-card:hover {
+	opacity: 1.0;
+	box-shadow: 4px 15px 20px rgba(10, 10, 10, 0.4);
+	transition: 1s;
+}
+
+.profile-card-image {
+	margin: 5px 8px 5px 5px;
+	border-radius: 75px;
+	max-width: 50px;
+	max-height: 50px;
+	border-color: white;
+}
+
+.profile-card-name {
+	margin-right: 8px;
+	color: #4a4a4a;
+}
+
+.ackno {
+	position: absolute;
+	right: 35px;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('images/CormorantGaramond-Regular.ttf') format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+.lds-ripple {
+  display: inline-block;
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+.lds-ripple div {
+  position: absolute;
+  border: 4px solid red;
+  opacity: 1;
+  border-radius: 50%;
+  animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+.lds-ripple div:nth-child(2) {
+  animation-delay: -0.5s;
+}
+
+@keyframes lds-ripple {
+  0% {
+    top: 28px;
+    left: 28px;
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    top: -1px;
+    left: -1px;
+    width: 58px;
+    height: 58px;
+    opacity: 0;
+  }
+}

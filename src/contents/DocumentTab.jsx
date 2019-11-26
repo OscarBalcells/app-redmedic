@@ -1,26 +1,10 @@
 import React from "react";
-import { message, Tabs, Button, Icon, Layout, Form, Input, Modal, Radio } from 'antd';
-const { Header, Content, Footer } = Layout;
-
-import Wallet from "../logic/Wallet.js";
-import Profile from "../logic/Profile.js";
+import { message, Button, Layout } from 'antd';
+import request from 'request-promise';
+const { mphrABI, Categories, PossibleDates } = require("../logic/Settings.js");
 import RecordSection from "./RecordSection.jsx";
 import ImageResource from "./ImageResource.jsx";
-
 const Web3 = require("web3");
-
-var categories = ["allergies", "labs", "procedures", "immunizations", "medications", "conditions", "images"];
-var possibleDates = ["performedDatePeriod","performedPeriod","recordedDate", "date", "dateRecorded",
-"effectiveDateTime", "effectiveTimeDate", "dateWritten",
-"performedDateTime"];
-
-function hex2a(hexx) {
-    var hex = hexx.toString();//force conversion
-    var str = '';
-    for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2)
-        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-    return str;
-}
 
 function compare(resourceA, resourceB) {
 	let a = resourceA["date"];
@@ -37,11 +21,11 @@ function compare(resourceA, resourceB) {
 }
 
 function getDate(resource) {
-	for(var i = 0; i < possibleDates.length; i++) {
-		if(resource.hasOwnProperty(possibleDates[i])) {
+	for(var i = 0; i < PossibleDates.length; i++) {
+		if(resource.hasOwnProperty(PossibleDates[i])) {
 			let date = null;
-			if(i <= 1) { date = resource[possibleDates[i]]["end"]; }
-			else { date = resource[possibleDates[i]]; }
+			if(i <= 1) { date = resource[PossibleDates[i]]["end"]; }
+			else { date = resource[PossibleDates[i]]; }
 			let d = date.split("-")[0];
 			if(d.length == 1) { d = "0"+d; }
 			let m = date.split("-")[1];
@@ -62,9 +46,6 @@ function getSummary(resource) {
 	else if(type === "Procedure") return resource.code.text+"  -  "+resource.status;
 	else if(type === "Image") return resource.notes;
 }
-
-const mphrAbi = '[{"constant":false,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"}],"name":"deletePPHR","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"}],"name":"getPPHR","outputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"},{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"acta","outputs":[{"internalType":"contract Acta","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"gateways","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"actaAddr","outputs":[{"internalType":"address payable","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"id","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"},{"internalType":"address","name":"addr","type":"address"},{"internalType":"bytes32","name":"section","type":"bytes32"}],"name":"revokeAccess","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"pphrAddr","type":"address"}],"name":"newPPHR","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"returnGateways","outputs":[{"internalType":"bytes32[]","name":"","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"},{"internalType":"address","name":"addr","type":"address"},{"internalType":"bytes32","name":"section","type":"bytes32"},{"internalType":"uint256","name":"nHours","type":"uint256"}],"name":"grantAccess","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_id","type":"bytes32"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]';
-
 
 export default class DocumentTab extends React.Component {
 	constructor(props) {
@@ -94,7 +75,7 @@ export default class DocumentTab extends React.Component {
 		else if(gateway == "0.0.0.0:5002")  provider = "Centro Médico Teknon";
 		var that = this;
 
-		categories.forEach(function (category) {
+		Categories.forEach(function (category) {
 			let list = [];
 			for(let i = 0; i < data[category].length; i++) {
 				let resource = data[category][i];
@@ -141,16 +122,42 @@ export default class DocumentTab extends React.Component {
 	async request(gateway, id, category) {
 		try {
 			let sig = this.props.profile.wallet.signData("nonce");
-			let url = "http://"+gateway+"/nonce/"+sig;
-			const nonce = await this.fetchUrl(url);
+			let url = "https://"+gateway+"/nonce/"+sig;
 
-			const message = id + "," + category + "," + nonce.toString();
-			sig = this.props.profile.wallet.signData(message);
-			url = "http://"+gateway+"/patient/"+id+"&"+category+"&"+nonce+"&"+sig;
-			const data = await this.fetchUrl(url);
-			this.addData(data, gateway);
-		} catch(exception) {
-			console.log("Exception ocurred:", exception);
+			request({ method: "GET", json: true, uri: url, rejectUnauthorized: false, insecure: true }).then(async (response) => {
+				if(!response.hasOwnProperty("SuccessMessage")) {
+					throw(reponse["ErrorMessage"]); //error ocurred!
+				}
+
+				const nonce = response["data"];
+				const message = this.state.id + "," + this.state.category + "," + nonce.toString();
+				sig = this.props.profile.wallet.signData(message);
+				url = "https://"+gateway+"/patient/"+id+"&"+category+"&"+nonce+"&"+sig;
+
+				console.log("QUERYING THE DATA!!!!");
+				request({ method: "GET", json: true, uri: url, rejectUnauthorized: false, insecure: true }).then(async (response) => {
+					console.log("Response is:",response);
+					if(!response.hasOwnProperty("SuccessMessage"))  {
+						console.log("NO SUCCESS?")
+						throw(reponse["ErrorMessage"]); //error ocurred!
+					}
+
+					this.addData(response["data"], gateway);
+					message.success("Data retrieved successfully");
+				}).catch((err) => {
+					console.log("Error ocurred when querying data!", err);
+				});
+			}).catch((err => {
+				console.log("Error ocurred when querying nonce!", err);
+			}));
+		} catch(err) {
+			console.log(err);
+			if(err === "404") message.error("404 Error - Patient not found");
+			else if(err == "402") message.error("402 Error - Access denied");
+			else if(err === "403") message.error("Error 403 - Invalid Nonce");
+			else if(err == "405") message.error("Error - Invalid Category");
+			else message.error("Unknown error ocurred: "+err);
+			throw(err);
 		}
 	}
 
@@ -159,34 +166,20 @@ export default class DocumentTab extends React.Component {
 		//first we have to find out all the gateways we have to query
 		var that = this;
 		let web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io"));
-		let mphr = new web3.eth.Contract(JSON.parse(mphrAbi));
+		let mphr = new web3.eth.Contract(JSON.parse(mphrABI));
 		mphr.options.address = this.props.profile.mphr;
 
-		let gateways = [];
 		mphr.methods.returnGateways().call({}, function (error, result) {
-			if(error) {
-				throw (error);
-			}
+			if(error) { throw (error); }
 			for(var i = 0; i < result.length; i++) {
-				let gateway = hex2a(result[i]).slice(1);
-				that.request(gateway, that.props.profile.id, "all");
+				let hex = result[i].toString();//force conversion
+				let gateway = '';
+				for (var j = 0; (j < hex.length && hex.substr(j, 2) !== '00'); j += 2) {
+					gateway += String.fromCharCode(parseInt(hex.substr(j, 2), 16));
+				}
+				that.request(gateway.slice(1), that.props.profile.id, "all");
 			}
 		});
-
-
-		/*
-		//manual way if you already know the providers you query
-		//this is very bad code because we are manually adding providers, but it just works
-		let gateways = [];
-		if(this.props.onlyProvider === "Corachan") gateways = ["0.0.0.0:5000"];
-		else if(this.props.onlyProvider === "Pilar") gateways = ["0.0.0.0:5001"];
-		else if(this.props.onlyProvider === "Teknon") gateways = ["0.0.0.0:5002"];
-		else gateways = ["0.0.0.0:5000","0.0.0.0:5001","0.0.0.0:5002"];
-
-		for(var i = 0; i < gateways.length; i++) {
-			this.request(gateways[i], this.props.profile.id, "all");
-		}
-		*/
 	}
 
 	changeView(newView) {
@@ -197,9 +190,9 @@ export default class DocumentTab extends React.Component {
 	returnContent() {
 		if(this.state.view === "all") {
 			let sections = [];
-			for(var i = 0; i < categories.length; i++) {
-				if(this.state[categories[i]].length === 0) continue;
-				sections.push(<RecordSection key={categories[i]} section={categories[i]} data={this.state[categories[i]]} individual={false} changeView={(newView) => this.changeView(newView)} />);
+			for(var i = 0; i < Categories.length; i++) {
+				if(this.state[Categories[i]].length === 0) continue;
+				sections.push(<RecordSection key={Categories[i]} section={Categories[i]} data={this.state[Categories[i]]} individual={false} changeView={(newView) => this.changeView(newView)} />);
 			}
 			return sections;
 		} else if(this.state.view.split(":")[0] === "image") {
@@ -208,7 +201,7 @@ export default class DocumentTab extends React.Component {
 			return (<ImageResource content={content} prev={this.state.prevView} changeView={() => this.changeView(this.state.prevView)}/>);
 		} else {
 			let cat = this.state.view;
-			if(categories.indexOf(cat) !== -1) {
+			if(Categories.indexOf(cat) !== -1) {
 				return (<RecordSection section={cat} data={this.state[cat]} individual={true} changeView={(newView) => this.changeView(newView)} />);
 			} else {
 				return (<div>Full record only!</div>);
@@ -219,7 +212,7 @@ export default class DocumentTab extends React.Component {
 	render() {
 		//not until we have data
 		if(this.state.personalData.hasOwnProperty("display") === false) {
-			return (<div style={{marginLeft:"50vw",marginTop:"250px"}} className="lds-ripple"><div></div><div></div></div>);
+			return (<div style={{marginLeft:"40vw",marginTop:"250px"}} className="lds-ripple"><div></div><div></div></div>);
 		}
 		let changeView = "";
 		if(this.props.onlyProvider !== "") {
@@ -231,7 +224,7 @@ export default class DocumentTab extends React.Component {
 			);
 		}
 		return (
-			<Layout style={{marginLeft:"210px"}}>
+			<Layout style={{padding:"30px"}}>
 				{this.returnContent()}
 				{changeView}
 			</Layout>

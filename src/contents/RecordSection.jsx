@@ -1,22 +1,11 @@
 import React from "react";
 import { Button, Collapse, Icon } from 'antd';
 const { Panel } = Collapse;
-
 import Resource from "./Resource.jsx";
+const { Gradients } = require("../logic/Settings.js");
 
 function firstCapitalize(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-let gradients = {
-	"allergies": "linear-gradient(#b30086,#ff00bf)",
-	"labs": "linear-gradient(#6691ff,#3f2b96)",
-	"procedures": "linear-gradient(#00B4DB,#00B4DB)",
-	"immunizations": "linear-gradient(#33ff77,#00b33c)",
-	"medications": "linear-gradient(#F00000, #DC281E)",
-	"conditions": "linear-gradient(#00cccc,#008080)",
-	"images": "linear-gradient(#ff1aff,#e600e6)",
-	"personalData": "linear-gradient(rgba(219,40,40,1), rgba(252,124,69,1))"
 }
 
 export default class RecordSection extends React.Component {
@@ -32,9 +21,10 @@ export default class RecordSection extends React.Component {
 				return this.props.data.map((resource) => {
 						ind += 1;
 						return (
-						<Panel key={resource.id} header={resource.summary+"  -  "+resource.date}>
-							<Resource key={resource.id} r={resource} section={sectionSingular} changeView={() => this.props.changeView("image:"+ind.toString())}/>
-						</Panel>);
+							<Panel key={resource.id} header={resource.summary+"  -  "+resource.date}>
+								<Resource key={resource.id} r={resource} section={sectionSingular} changeView={() => this.props.changeView("image:"+ind.toString())}/>
+							</Panel>
+						);
 				});
 			} else {
 				let ind = -1;
@@ -63,7 +53,7 @@ export default class RecordSection extends React.Component {
 			return (
 				<div style={{marginTop:"15px",marginLeft:"10px"}}>
 					<div className="section-header"
-					style={{background:gradients[this.props.section]}}
+					style={{background:Gradients[this.props.section]}}
 					onClick={() => this.props.changeView(this.props.section)}>
 						<img src={"./images/"+this.props.section+".png"} width="25px" height="25px"/>
 						<b>{firstCapitalize(this.props.section)}</b>

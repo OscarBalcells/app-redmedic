@@ -1,10 +1,10 @@
 import React from "react";
-import { Button, Icon, Input, Card } from "antd";
+import { Button, Icon, Card } from "antd";
 
 export default class ImageResource extends React.Component {
 	render() {
 		return (
-			<div style={{marginTop:"15px",marginLeft:"15px"}}>
+			<div>
 				<Button type="danger" onClick={() => this.props.changeView()}>Back <Icon type="rollback" /></Button>
 				<Card
 				    hoverable

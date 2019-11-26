@@ -1,7 +1,5 @@
 import React from "react";
-import { PageHeader, Table, Divider, Tag, Popconfirm, essage, Button, Icon, Layout, Form, Input, Modal, Radio } from 'antd';
-const { Header, Content, Footer } = Layout;
-
+import { Table, Divider, Tag, message, Button, Icon, Form, Input, Modal, AutoComplete } from 'antd';
 const Web3 = require("web3");
 
 let colorCats = {
@@ -81,7 +79,7 @@ export default class PPHRComponent extends React.Component {
 		}
 	}
 
-	//load all the permissions linked to this MPHR
+	//load all the permissions linked to this PPHR
 	componentDidMount() {
 		Permissions.getPermissionsById(this.props.addr).then(object => {
 			let obj = object;
@@ -119,6 +117,7 @@ export default class PPHRComponent extends React.Component {
 		if(this.state.data[ind].deleted === true) return;
 		let addr = this.state.data[ind].addr;
 		this.obj.applyChanges(this.state.data[ind]["categories"], addr);
+		message.success("New Permissions saved!");
 	}
 
 	handleCancel() {
@@ -184,7 +183,7 @@ export default class PPHRComponent extends React.Component {
 
 	render() {
 		return (
-			<div className="pphr-component" style={{marginLeft:"210px",backgroundColor:"white"}}>
+			<div className="pphr-component" style={{backgroundColor:"white",width:"98%",margin:"auto",marginTop:"10px"}}>
 				<span className="provider-name"><a onClick={() => this.props.changeView()}>{this.props.providerName}</a></span>
 				<Button className="add-button" type="primary" shape="circle" onClick={() => this.setState({visible:true})}><Icon type="plus" /></Button>
 				<div style={{marginLeft:"10px",marginTop:"5px",marginRight:"10px",marginBottom:"8px"}}>{this.renderData()}</div>

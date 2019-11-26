@@ -1,42 +1,8 @@
 import React from "react";
-import { message, Tabs, Button, Icon, Layout, Form, Input, Modal, Radio } from 'antd';
-const {  Header, Sider } = Layout;
-
-import Wallet from "../logic/Wallet.js";
-import Profile from "../logic/Profile.js";
+import { message, Button, Icon, Form, Input } from 'antd';
+import request from 'request-promise';
 import RecordSection from "./RecordSection.jsx";
-
-let categories  = ["allergies", "labs", "procedures", "immunizations", "medications", "conditions", "images"];
-var possibleDates = ["performedDatePeriod","performedPeriod","recordedDate", "date", "dateRecorded",
-"effectiveDateTime", "effectiveTimeDate", "dateWritten",
-"performedDateTime"];
-
-function getSummary(resource) {
-	let type = resource.resourceType;
-	if(type === "AllergyIntolerance") return resource.substance+"  -  "+resource.status;
-	else if(type === "Condition") return resource.code.coding[0].display+"  -  "+resource.clinicalStatus;
-	else if(type === "Immunization") return resource.vaccineCode.text+"  -  "+resource.status;
-	else if(type === "Observation") return resource.code.text+"  -  "+resource.valueQuantity.value+" "+resource.valueQuantity.unit;
-	else if(type === "MedicationOrder") return resource.medicationReference;
-	else if(type === "Procedure") return resource.code.text+"  -  "+resource.status;
-	else if(type === "Images") return resource.notes;
-}
-
-function getDate(resource) {
-	for(var i = 0; i < possibleDates.length; i++) {
-		if(resource.hasOwnProperty(possibleDates[i])) {
-			let date = null;
-			if(i <= 1) { date = resource[possibleDates[i]]["end"]; }
-			else { date = resource[possibleDates[i]]; }
-			let d = date.split("-")[0];
-			if(d.length == 1) { d = "0"+d; }
-			let m = date.split("-")[1];
-			if(m.length == 1) { m = "0"+m; }
-			let y = date.split("-")[2].slice(0,4);
-			return d+"-"+m+"-"+y;
-		}
-	}
-}
+const { Categories, GetSummary, GetDate } = require("../logic/Settings.js");
 
 export default class SearchTab extends React.Component {
 	constructor(props) {
@@ -51,58 +17,42 @@ export default class SearchTab extends React.Component {
 		};
 	}
 
-
-	fetchStuff(url) {
-		return new Promise(function (resolve,reject) {
-			var xhr = new XMLHttpRequest();
-			xhr.open("GET", url, true);
-			xhr.onload = function() {
-				var status = xhr.status;
-				if(status == 200) {
-					const response = JSON.parse(xhr.responseText);
-					if(response.hasOwnProperty("ErrorMessage")) {
-						reject(status);
-					} else {
-						resolve(response["data"]);
-					}
-				} else {
-					reject(status);
-				}
-			};
-			xhr.send();
-		});
-	}
-
 	async queryData() {
 		try {
 			if(this.state.category !== "all") {
-				let catLen = categories.length;
+				let catLen = Categories.length;
 				for(let i = 0; i < catLen; i++) {
-					if(categories[i] === this.state.category) break;
+					if(Categories[i] === this.state.category) break;
 					if(i === catLen-1) throw("405");
 				}
 			}
-			let sig = this.props.profile.wallet.signData("nonce");
-			let url = "http://"+this.state.ip+":"+this.state.port+"/nonce/"+sig;
-			const nonce = await this.fetchStuff(url);
 
-			const message = this.state.id + "," + this.state.category + "," + nonce.toString();
-			sig = this.props.profile.wallet.signData(message);
-			url = "http://"+this.state.ip+":"+this.state.port+"/patient/" + this.state.id + "&" +
-			this.state.category + "&" + nonce + "&" + sig;
-			const data = await this.fetchStuff(url);
-			this.setState({categoryQueried:this.state.category});
-			this.setState({answer:data});
+			var sig = this.props.profile.wallet.signData("nonce");
+			var url = "https://"+this.state.ip+":"+this.state.port+"/nonce/"+sig;
+
+			request({ method: "GET", uri: url, rejectUnauthorized: false, insecure: true }).then(async (response) => {
+				if(!response.hasOwnProperty("SuccessMessage"))  throw(reponse["ErrorMessage"]); //error ocurred!
+
+				const nonce = response["data"];
+				const message = this.state.id + "," + this.state.category + "," + nonce.toString();
+				sig = this.props.profile.wallet.signData(message);
+				url = "https://"+this.state.ip+":"+this.state.port+"/patient/" + this.state.id + "&" + this.state.category + "&" + nonce + "&" + sig;
+
+				request({ method: "GET", uri: url, rejectUnauthorized: false, insecure: true }).then(async (response) => {
+					if(!response.hasOwnProperty("SuccessMessage"))  throw(reponse["ErrorMessage"]); //error ocurred!
+
+					this.setState({categoryQueried:this.state.category,answer:response["data"]});
+					message.success("Data retrieved successfully");
+				});
+			});
 		} catch (err) {
 			console.log(err);
 			if(err === "404") message.error("404 Error - Patient not found");
-			else if(err == "402") message.error("402 Error - Access denied, invalid signature");
-			else if(err == "405") message.error("Error - Invalid Category");
+			else if(err == "402") message.error("402 Error - Access denied");
 			else if(err === "403") message.error("Error 403 - Invalid Nonce");
+			else if(err == "405") message.error("Error - Invalid Category");
 			else message.error("Unknown error ocurred: "+err);
-			return;
 		}
-		message.success("Data retrieved successfully");
 	}
 
 	renderAnswer() {
@@ -118,18 +68,18 @@ export default class SearchTab extends React.Component {
 			pd["id"] = 1; pd["date"] = "Recently updated";
 			pdSection.push(pd);
 			sections.push(<RecordSection key={"personalData"} section={"personalData"} noBack={true} data={pdSection} individual={false} changeView={() => console.log("Changing view")} />);
-			for(var i = 0; i < categories.length; i++) {
-				let cat = categories[i];
+			for(var i = 0; i < Categories.length; i++) {
+				let cat = Categories[i];
 				if(this.state.answer[cat].length === 0) continue;
 				let resources = [];
 				for(let i = 0; i < this.state.answer[cat].length; i++) {
 					let resource = this.state.answer[cat][i];
-					resource["summary"] = getSummary(resource);
-					resource["date"] = getDate(resource);
+					resource["summary"] = GetSummary(resource);
+					resource["date"] = GetDate(resource);
 					resources.push(resource);
 				}
 				console.log(cat, resources,this.state.answer[cat]);
-				sections.push(<RecordSection key={categories[i]} section={categories[i]} data={resources} individual={false} changeView={() => console.log("Changing view")} />);
+				sections.push(<RecordSection key={Categories[i]} section={Categories[i]} data={resources} individual={false} changeView={() => console.log("Changing view")} />);
 			}
 			return sections;
 		} else {
@@ -144,7 +94,7 @@ export default class SearchTab extends React.Component {
 			}
 			for(let i = 0; i < this.state.answer.length; i++) {
 				let resource = this.state.answer[i];
-				resource["summary"] = getSummary(resource);
+				resource["summary"] = GetSummary(resource);
 				resources.push(resource);
 			}
 			if(resources.length === 0) return (<div>No resources belonging to this category found</div>);
@@ -153,11 +103,10 @@ export default class SearchTab extends React.Component {
 	}
 
 	render() {
-		//<div className="search-addr">Signing queries as address <b>{this.props.profile.wallet.addr}</b></div>
 		return (
-			<Layout style={{marginLeft:"205px",backgroundColor:"white"}}>
-				<Layout style={{backgroundColor:"white",position:"fixed"}}>
-					<Sider className="search-sider">
+			<div style={{padding:"30px"}}>
+				<div className="search-sider">
+					<div className="hover-card" style={{borderRadius:"8px",border:"1px solid grey",padding:"10px"}}>
 						<div className="search-params"><b>Search Parameters</b></div>
 						<Form style={{marginLeft:"10px"}}>
 							<Form.Item label="Provider's Gateway IP">
@@ -196,21 +145,21 @@ export default class SearchTab extends React.Component {
 									onChange={(e) => this.setState({category:e.target.value})}
 								/>
 							</Form.Item>
-						</Form>
-						<div>
+							</Form>
 							<Button className="request-trigger" type="primary" onClick={() => this.queryData()}>
 								Send Request
 							</Button>
-							<div style={{marginTop:"10px",fontSize:"10px",marginLeft:""}}>
-								Queries are being signed using address {this.props.profile.wallet.addr}
-							</div>
 						</div>
-					</Sider>
-					<Layout>
-						{this.renderAnswer()}
-					</Layout>
-				</Layout>
-			</Layout>
+
+						<div className="hover-card" style={{borderRadius:"8px",marginTop:"15px",border:"1px solid grey",fontSize:"13px",padding:"10px"}}>
+							Queries are being signed with the account represented by the following address:<br></br>
+							<b>{this.props.profile.wallet.addr}</b>
+						</div>
+					</div>
+				<div>
+					{this.renderAnswer()}
+				</div>
+			</div>
 		);
 	}
 }

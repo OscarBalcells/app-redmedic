@@ -5,10 +5,7 @@ import { enableLiveReload } from 'electron-compile';
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
-
-const isDevMode = process.execPath.match(/[\\/]electron/);
-
-if (isDevMode) enableLiveReload({ strategy: 'react-hmr' });
+enableLiveReload({ strategy: 'react-hmr' });
 
 const createWindow = async () => {
 
@@ -23,10 +20,8 @@ const createWindow = async () => {
 		mainWindow.maximize();
 
     // Open the DevTools.
-    if (isDevMode) {
-        await installExtension(REACT_DEVELOPER_TOOLS);
-        //mainWindow.webContents.openDevTools();
-    }
+    await installExtension(REACT_DEVELOPER_TOOLS);
+    //mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed.
     mainWindow.on('closed', () => {

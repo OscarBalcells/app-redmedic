@@ -1,17 +1,14 @@
 const bip39 = require("bip39");
 const hdkey = require("hdkey");
 const ethUtil = require("ethereumjs-util");
-import Database from "./Database.js";
 
 export default class Wallet {
-
   constructor(mnemonic) {
 		const seed = bip39.mnemonicToSeed(mnemonic);
 		const root = hdkey.fromMasterSeed(seed);
 		const addrNode = root.derive("m/44'/60'/0'/0/0");
 		const pubKey = ethUtil.privateToPublic(addrNode._privateKey);
 		const addr = ethUtil.publicToAddress(pubKey).toString("hex");
-
 		this.addr = ethUtil.toChecksumAddress(addr);
 		this.privKey = addrNode._privateKey.toString("hex");
 	}
@@ -21,8 +18,8 @@ export default class Wallet {
 	}
 
 	signData(data) {
-
-		const msgBuffer = ethUtil.toBuffer(data);
+		const hexData = "0x"+Buffer.from(data, 'utf8').toString('hex');
+		const msgBuffer = ethUtil.toBuffer(hexData);
 		const msgHash = ethUtil.hashPersonalMessage(msgBuffer);
 		const privateKey = new Buffer(this.privKey, "hex");
 		const sig = ethUtil.ecsign(msgHash, privateKey);
